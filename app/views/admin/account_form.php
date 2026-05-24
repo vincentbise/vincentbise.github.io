@@ -1,4 +1,5 @@
 <?php
+$user = $user ?? null;
 $isEdit    = !empty($user);
 $pageTitle = $isEdit ? 'Edit Account' : 'Add Account';
 include VIEW_PATH . '/layouts/header.php';
@@ -26,7 +27,7 @@ include VIEW_PATH . '/layouts/header.php';
                 <?= Controller::csrfField() ?>
 
                 <?php if ($isEdit): ?>
-                    <input type="hidden" name="user_id" value="<?= (int)$user['user_id'] ?>"/>
+                    <input type="hidden" name="user_id" value="<?= (int)($user['user_id'] ?? 0) ?>"/>
                 <?php endif; ?>
 
                 <div class="form-grid">

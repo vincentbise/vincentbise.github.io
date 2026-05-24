@@ -1,4 +1,5 @@
 <?php
+$driver = $driver ?? ['full_name' => '—'];
 $pageTitle = 'My Trip History';
 include VIEW_PATH . '/layouts/header.php';
 ?>
