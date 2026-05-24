@@ -140,4 +140,27 @@ class VehicleController extends Controller {
         $this->flash('success', 'Vehicle updated successfully.');
         $this->redirect('admin/vehicles');
     }
+
+    /** API: Return available vehicles filtered by type and capacity (JSON). */
+    public function availableApi(): void {
+        $type     = $_GET['type']     ?? null;
+        $capacity = max(1, (int)($_GET['capacity'] ?? 1));
+
+        $vehicles = $this->model->availableByFilter($type, $capacity);
+
+        $result = array_map(function ($v) {
+            return [
+                'vehicle_id'   => (int)$v['vehicle_id'],
+                'plate_number' => $v['plate_number'],
+                'make_model'   => $v['make_model'],
+                'vehicle_type' => $v['vehicle_type'] ?? '—',
+                'capacity'     => (int)$v['capacity'],
+                'year'         => $v['year'] ?? '—',
+                'color'        => $v['color'] ?? '—',
+                'driver_name'  => $v['assigned_driver_name'] ?? null,
+            ];
+        }, $vehicles);
+
+        $this->json(['success' => true, 'vehicles' => $result]);
+    }
 }

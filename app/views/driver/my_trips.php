@@ -31,14 +31,13 @@ include VIEW_PATH . '/layouts/header.php';
                             <th>Ref No.</th>
                             <th>Destination</th>
                             <th>Period</th>
-                            <th>Starting Mileage</th>
-                            <th>Ending Mileage</th>
+                            <th>Vehicle</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php if (empty($trips)): ?>
-                        <tr><td colspan="6" class="empty-row">No trip records found.</td></tr>
+                        <tr><td colspan="5" class="empty-row">No trip records found.</td></tr>
                     <?php else: ?>
                     <?php foreach ($trips as $t): ?>
                         <tr>
@@ -50,8 +49,7 @@ include VIEW_PATH . '/layouts/header.php';
                                     – <?= date('M d, Y', strtotime($t['return_date'])) ?>
                                 <?php endif; ?>
                             </td>
-                            <td><?= number_format((float)$t['start_mileage'], 1) ?> km</td>
-                            <td><?= $t['end_mileage'] !== null ? number_format((float)$t['end_mileage'], 1) . ' km' : '<span class="muted">—</span>' ?></td>
+                            <td><?= htmlspecialchars(($t['make_model'] ?? '—') . ' (' . ($t['plate_number'] ?? '—') . ')') ?></td>
                             <td><span class="badge badge-<?= $t['status'] ?>"><?= ucfirst(str_replace('_',' ',$t['status'])) ?></span></td>
                         </tr>
                     <?php endforeach; ?>

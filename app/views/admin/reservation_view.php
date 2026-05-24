@@ -36,53 +36,40 @@ include VIEW_PATH . '/layouts/header.php';
                     <div><dt>Purpose</dt>     <dd><?= nl2br(htmlspecialchars($reservation['purpose'])) ?></dd></div>
                     <div><dt>Departure</dt>   <dd><?= htmlspecialchars($reservation['departure_date'] . ' ' . $reservation['departure_time']) ?></dd></div>
                     <div><dt>Return</dt>      <dd><?= htmlspecialchars($reservation['return_date']   . ' ' . $reservation['return_time'])   ?></dd></div>
+                    <?php if ($reservation['make_model']): ?>
+                    <div><dt>Vehicle</dt>     <dd><?= htmlspecialchars($reservation['make_model'] . ' (' . $reservation['plate_number'] . ')') ?></dd></div>
+                    <?php endif; ?>
                     <?php if ($reservation['remarks']): ?>
                     <div class="full-detail"><dt>Remarks</dt><dd><?= nl2br(htmlspecialchars($reservation['remarks'])) ?></dd></div>
                     <?php endif; ?>
                 </dl>
             </div>
 
-            <!-- Assign Vehicle & Driver (Admin only, when approved) -->
-            <?php if ($reservation['status'] === 'approved'
-                   && (($_SESSION['role'] ?? '') === 'admin')): ?>
+            <!-- Dispatch Info (if dispatch log exists) -->
+            <?php if (!empty($dispatchLog)): ?>
             <div class="detail-section">
-                <h3>Assign Vehicle & Driver</h3>
-                <form method="POST" action="<?= BASE_URL ?>admin/reservations/assign"
-                      data-ajax-url="<?= BASE_URL ?>api/reservations/assign"
-                      id="assign-form">
-                    <?= Controller::csrfField() ?>
-                    <input type="hidden" name="reservation_id" value="<?= (int)$reservation['reservation_id'] ?>"/>
-
-                    <div class="form-group">
-                        <label for="vehicle_id">Select Vehicle <span class="required">*</span></label>
-                        <select id="vehicle_id" name="vehicle_id" required>
-                            <option value="">— Choose a vehicle —</option>
-                            <?php if (!empty($vehicles)): ?>
-                            <?php foreach ($vehicles as $v): ?>
-                            <option value="<?= (int)$v['vehicle_id'] ?>">
-                                <?= htmlspecialchars($v['make_model'] . ' (' . $v['plate_number'] . ') – ' . $v['capacity'] . ' pax') ?>
-                            </option>
-                            <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
+                <h3>Dispatch Information</h3>
+                <div class="driver-info-card">
+                    <div class="driver-info-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
-
-                    <div class="form-group">
-                        <label for="driver_id">Assign Driver <span class="required">*</span></label>
-                        <select id="driver_id" name="driver_id" required>
-                            <option value="">— Choose a driver —</option>
-                            <?php if (!empty($drivers)): ?>
-                            <?php foreach ($drivers as $d): ?>
-                            <option value="<?= (int)$d['driver_id'] ?>">
-                                <?= htmlspecialchars($d['full_name'] . ' (License: ' . $d['license_no'] . ')') ?>
-                            </option>
-                            <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
+                    <div>
+                        <div class="driver-info-label">Assigned Driver</div>
+                        <div class="driver-info-name"><?= htmlspecialchars($dispatchLog['driver_name'] ?? '—') ?></div>
                     </div>
-
-                    <button type="submit" class="btn-primary">Assign Vehicle &amp; Driver</button>
-                </form>
+                </div>
+                <dl class="detail-list" style="margin-top:12px;">
+                    <div><dt>Vehicle</dt><dd><?= htmlspecialchars(($dispatchLog['make_model'] ?? '—') . ' (' . ($dispatchLog['plate_number'] ?? '—') . ')') ?></dd></div>
+                    <?php if ($dispatchLog['actual_departure']): ?>
+                    <div><dt>Departed</dt><dd><?= date('M d, Y g:i A', strtotime($dispatchLog['actual_departure'])) ?></dd></div>
+                    <?php endif; ?>
+                    <?php if ($dispatchLog['actual_return']): ?>
+                    <div><dt>Returned</dt><dd><?= date('M d, Y g:i A', strtotime($dispatchLog['actual_return'])) ?></dd></div>
+                    <?php endif; ?>
+                    <?php if ($dispatchLog['trip_notes']): ?>
+                    <div class="full-detail"><dt>Trip Notes</dt><dd><?= nl2br(htmlspecialchars($dispatchLog['trip_notes'])) ?></dd></div>
+                    <?php endif; ?>
+                </dl>
             </div>
             <?php endif; ?>
         </section>
@@ -126,19 +113,3 @@ include VIEW_PATH . '/layouts/header.php';
 </div>
 
 <?php include VIEW_PATH . '/layouts/footer.php'; ?>
-<script>
-    const assignForm = document.getElementById('assign-form');
-    if (assignForm) {
-        assignForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await VRS.ajax.submitForm(assignForm, {
-                onSuccess: (data) => {
-                    VRS.notify.success(data.message);
-                    if (data.redirect) {
-                        setTimeout(() => { window.location.href = data.redirect; }, 1000);
-                    }
-                },
-            });
-        });
-    }
-</script>

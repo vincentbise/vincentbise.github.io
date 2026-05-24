@@ -28,7 +28,6 @@ class DriverController extends Controller {
         $this->verifyCsrf();
 
         $reservationId = (int)($_POST['reservation_id'] ?? 0);
-        $startMileage  = (float)($_POST['start_mileage'] ?? 0);
 
         $reservation = $this->reservationModel->findById($reservationId);
         $driver      = $this->driverModel->findByUserId((int)$_SESSION['user_id']);
@@ -40,18 +39,15 @@ class DriverController extends Controller {
             $this->redirect('driver/dashboard');
         }
 
-
         $existingLog = $this->logModel->findByReservation($reservationId);
         if ($existingLog) {
-
-            $this->logModel->startTrip($reservationId, $startMileage);
+            $this->logModel->startTrip($reservationId, 0);
         } else {
-
             $this->logModel->create([
                 'reservation_id' => $reservationId,
                 'driver_id'      => (int)$driver['driver_id'],
                 'vehicle_id'     => (int)$reservation['vehicle_id'],
-                'start_mileage'  => $startMileage,
+                'start_mileage'  => 0,
             ]);
         }
 
@@ -69,7 +65,7 @@ class DriverController extends Controller {
         $this->redirect('driver/dashboard');
     }
 
-    /** Driver marks trip as complete and logs mileage. */
+    /** Driver marks trip as complete. */
     public function complete(): void {
         $this->requireRole('driver');
         $this->verifyCsrf();
@@ -77,9 +73,9 @@ class DriverController extends Controller {
         $reservationId = (int)($_POST['reservation_id'] ?? 0);
 
         $this->logModel->complete($reservationId, [
-            'end_mileage'   => (float)($_POST['end_mileage']   ?? 0),
-            'fuel_consumed' => (float)($_POST['fuel_consumed'] ?? 0),
-            'trip_notes'    => trim($_POST['trip_notes']       ?? ''),
+            'end_mileage'   => null,
+            'fuel_consumed' => null,
+            'trip_notes'    => trim($_POST['trip_notes'] ?? ''),
         ]);
 
         $reservation = $this->reservationModel->findById($reservationId);

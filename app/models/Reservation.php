@@ -70,8 +70,8 @@ class Reservation extends Model {
         $this->execute(
             'INSERT INTO reservations
              (reference_no, requester_id, purpose, destination, passengers,
-              departure_date, departure_time, return_date, return_time, status)
-             VALUES (?,?,?,?,?,?,?,?,?,?)',
+              departure_date, departure_time, return_date, return_time, vehicle_id, status)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?)',
             [
                 $refNo,
                 $data['requester_id'],
@@ -82,6 +82,7 @@ class Reservation extends Model {
                 $data['departure_time'],
                 $data['return_date'],
                 $data['return_time'],
+                $data['vehicle_id'] ?? null,
                 'pending',
             ]
         );

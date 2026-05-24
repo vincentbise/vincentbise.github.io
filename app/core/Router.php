@@ -52,6 +52,7 @@ class Router {
         'api/accounts/toggle'      => ['UserController',        'toggle'],
         'api/vehicles/store'       => ['VehicleController',     'store'],
         'api/vehicles/update'      => ['VehicleController',     'update'],
+        'api/vehicles/available'   => ['VehicleController',     'availableApi'],
         'api/reservations/store'   => ['ReservationController', 'store'],
         'api/reservations/cancel'  => ['ReservationController', 'cancel'],
         'api/reservations/assign'  => ['ReservationController', 'assign'],

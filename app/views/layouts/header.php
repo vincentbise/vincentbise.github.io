@@ -12,10 +12,10 @@ $pageTitle = $pageTitle ?? APP_NAME;
     <meta name="csrf-token" content="<?= Controller::generateCsrfToken() ?>"/>
     <meta name="base-url" content="<?= BASE_URL ?>"/>
     <link rel="icon" href="<?= BASE_URL ?>images/logo.png"/>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/style.css"/>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/tables.css"/>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/notifications.css"/>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/responsive.css"/>
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/style.css?v=<?= time() ?>"/>
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/tables.css?v=<?= time() ?>"/>
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/notifications.css?v=<?= time() ?>"/>
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/responsive.css?v=<?= time() ?>"/>
 </head>
 <body>
 

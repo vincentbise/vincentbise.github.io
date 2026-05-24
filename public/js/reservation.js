@@ -1,4 +1,4 @@
-/* reservation.js — New reservation form validation & AJAX submit */
+/* reservation.js — New reservation form: validation, vehicle selection (REQUIRED) & AJAX submit */
 
 (function () {
     'use strict';
@@ -10,6 +10,7 @@
 
     if (!form) return;
 
+    // ── Date constraints ─────────────────────────────────────────────
     const today = new Date().toISOString().split('T')[0];
     if (depDateEl) depDateEl.min = today;
     if (retDateEl) retDateEl.min = today;
@@ -23,10 +24,136 @@
         });
     }
 
+    // ── Vehicle Selection (REQUIRED Dropdown) ────────────────────────
+    const typeFilter   = document.getElementById('vehicle_type_filter');
+    const vehicleSelect = document.getElementById('vehicle_id');
+    const detailsCard   = document.getElementById('selected-vehicle-details-card');
 
+    let vehiclesData = [];
+
+    if (typeFilter) typeFilter.addEventListener('change', fetchVehicles);
+    if (vehicleSelect) vehicleSelect.addEventListener('change', handleVehicleChange);
+
+    // Initial fetch
+    fetchVehicles();
+
+    function fetchVehicles() {
+        if (!vehicleSelect) return;
+
+        const type = typeFilter ? typeFilter.value : 'all';
+
+        // Clear select options and disable it while loading
+        vehicleSelect.innerHTML = '<option value="">Searching vehicles...</option>';
+        vehicleSelect.disabled = true;
+        hideDetails();
+
+        const baseMeta = document.querySelector('meta[name="base-url"]');
+        const baseUrl  = baseMeta ? baseMeta.getAttribute('content') : '/';
+        const url = `${baseUrl}api/vehicles/available?type=${encodeURIComponent(type)}&capacity=1`;
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        })
+        .then(r => {
+            if (!r.ok) {
+                console.error('Vehicle API error:', r.status, r.statusText);
+                throw new Error('API returned ' + r.status);
+            }
+            return r.text();
+        })
+        .then(text => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Vehicle API returned non-JSON:', text.substring(0, 200));
+                throw e;
+            }
+
+            vehicleSelect.innerHTML = '';
+            
+            if (!data.success || !data.vehicles || data.vehicles.length === 0) {
+                vehiclesData = [];
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No available vehicles of this type';
+                vehicleSelect.appendChild(opt);
+                vehicleSelect.disabled = true;
+                return;
+            }
+
+            vehiclesData = data.vehicles;
+            vehicleSelect.disabled = false;
+
+            // Add placeholder option
+            const placeholderOpt = document.createElement('option');
+            placeholderOpt.value = '';
+            placeholderOpt.textContent = '— Select vehicle —';
+            vehicleSelect.appendChild(placeholderOpt);
+
+            data.vehicles.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.vehicle_id;
+                opt.textContent = `${v.make_model} (${v.plate_number}) — ${v.capacity} pax`;
+                vehicleSelect.appendChild(opt);
+            });
+        })
+        .catch((err) => {
+            console.error('Vehicle fetch failed:', err);
+            vehicleSelect.innerHTML = '<option value="">Failed to load vehicles</option>';
+            vehicleSelect.disabled = true;
+            vehiclesData = [];
+        });
+    }
+
+    function handleVehicleChange() {
+        if (!vehicleSelect) return;
+        const val = vehicleSelect.value;
+        
+        // Reset border highlight
+        vehicleSelect.style.borderColor = '';
+
+        if (!val) {
+            hideDetails();
+            return;
+        }
+
+        const vehicle = vehiclesData.find(v => String(v.vehicle_id) === String(val));
+        if (vehicle) {
+            showDetails(vehicle);
+        } else {
+            hideDetails();
+        }
+    }
+
+    function showDetails(v) {
+        if (!detailsCard) return;
+        
+        const modelEl = document.getElementById('details-make-model');
+        const plateEl = document.getElementById('details-plate');
+        const typeEl  = document.getElementById('details-type');
+        const colorEl = document.getElementById('details-color');
+        const yearEl  = document.getElementById('details-year');
+        const capEl   = document.getElementById('details-capacity');
+
+        if (modelEl) modelEl.textContent = v.make_model;
+        if (plateEl) plateEl.textContent = v.plate_number;
+        if (typeEl)  typeEl.textContent  = v.vehicle_type;
+        if (colorEl) colorEl.textContent = v.color || 'N/A';
+        if (yearEl)  yearEl.textContent  = v.year || 'N/A';
+        if (capEl)   capEl.textContent   = v.capacity + ' passengers max';
+
+        detailsCard.style.display = 'block';
+    }
+
+    function hideDetails() {
+        if (detailsCard) detailsCard.style.display = 'none';
+    }
+
+    // ── Form submission with validation ──────────────────────────────
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-
 
         const required = form.querySelectorAll('[required]');
         let valid = true;
@@ -44,6 +171,18 @@
             return;
         }
 
+        // Vehicle selection is required
+        if (!vehicleSelect || !vehicleSelect.value) {
+            VRS.notify.warning('Please select a vehicle for this trip.');
+            const section = document.querySelector('.vehicle-selection-section');
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                section.classList.add('highlight-shake');
+                setTimeout(() => section.classList.remove('highlight-shake'), 600);
+            }
+            if (vehicleSelect) vehicleSelect.style.borderColor = 'var(--danger)';
+            return;
+        }
 
         if (depDateEl && depDateEl.value < today) {
             VRS.notify.warning('Departure date cannot be in the past.');

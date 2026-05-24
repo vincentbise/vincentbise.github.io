@@ -12,12 +12,38 @@ class Vehicle extends Model {
         );
     }
 
-    /** Available vehicles for assignment. */
+    /** Available vehicles for assignment (with assigned driver info). */
     public function available(): array {
         return $this->query(
-            'SELECT * FROM vehicles WHERE status = ? ORDER BY make_model',
+            'SELECT v.*, u.full_name AS assigned_driver_name, d.driver_id AS assigned_driver_db_id,
+                    d.license_no AS assigned_driver_license
+             FROM   vehicles v
+             LEFT JOIN drivers d ON d.driver_id = v.assigned_driver_id
+             LEFT JOIN users u ON u.user_id = d.user_id
+             WHERE  v.status = ?
+             ORDER  BY v.make_model',
             ['available']
         );
+    }
+
+    /** Available vehicles filtered by type and minimum capacity. */
+    public function availableByFilter(?string $type = null, int $minCapacity = 1): array {
+        $sql = 'SELECT v.*, u.full_name AS assigned_driver_name
+                FROM   vehicles v
+                LEFT JOIN drivers d ON d.driver_id = v.assigned_driver_id
+                LEFT JOIN users u ON u.user_id = d.user_id
+                WHERE  v.status = ?
+                  AND  v.capacity >= ?';
+        $params = ['available', $minCapacity];
+
+        if ($type && $type !== 'all') {
+            $sql .= ' AND v.vehicle_type = ?';
+            $params[] = $type;
+        }
+
+        $sql .= ' ORDER BY v.capacity ASC, v.make_model';
+
+        return $this->query($sql, $params);
     }
 
     public function findById(int $id): ?array {

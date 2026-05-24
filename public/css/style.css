@@ -1042,3 +1042,230 @@ a.nav-btn.active {
     padding: 14px;
     font-size: 12px;
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   Vehicle Selection Section — Reservation Form (REQUIRED)
+   ════════════════════════════════════════════════════════════════════ */
+
+.form-panel-wide {
+    max-width: 960px;
+}
+
+.vehicle-selection-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid var(--border);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--brand);
+    margin-bottom: 4px;
+}
+
+.section-title svg {
+    color: var(--brand);
+    flex-shrink: 0;
+}
+
+.section-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.optional-tag {
+    display: inline-block;
+    background: #f0f0f0;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    vertical-align: middle;
+}
+
+.vehicle-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* Vehicle Selection Details Card */
+.selected-vehicle-details-card {
+    background: var(--soft);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-top: 20px;
+    animation: fadeUp .3s ease forwards;
+}
+
+.details-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--brand);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+.details-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.details-card-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.details-card-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.details-card-value {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 700;
+}
+
+/* Shake animation for validation */
+@keyframes highlightShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.highlight-shake {
+    animation: highlightShake .4s ease;
+    border-color: var(--danger) !important;
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: -16px;
+    margin-bottom: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Admin — Driver Info Display (from dispatch log)
+   ════════════════════════════════════════════════════════════════════ */
+
+.driver-info-display {
+    margin-bottom: 16px;
+    animation: fadeUp .3s ease forwards;
+}
+
+.driver-info-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: var(--radius-sm);
+}
+
+.driver-info-icon {
+    width: 42px;
+    height: 42px;
+    background: #dcfce7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #16a34a;
+    flex-shrink: 0;
+}
+
+.driver-info-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    margin-bottom: 2px;
+}
+
+.driver-info-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.driver-info-license {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Driver — Trip Action Buttons (Start / Complete)
+   ════════════════════════════════════════════════════════════════════ */
+
+.btn-trip-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.btn-trip-action svg {
+    flex-shrink: 0;
+}
+
+.btn-trip-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+.btn-trip-action:active {
+    transform: scale(0.98);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Responsive tweaks for new components
+   ════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+    .vehicle-filter-row {
+        grid-template-columns: 1fr;
+    }
+
+    .vehicle-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .driver-info-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .selected-vehicle-banner-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+}

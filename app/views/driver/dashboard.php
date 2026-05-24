@@ -40,12 +40,10 @@ include VIEW_PATH . '/layouts/header.php';
                           class="ajax-driver-form">
                         <?= Controller::csrfField() ?>
                         <input type="hidden" name="reservation_id" value="<?= (int)$t['reservation_id'] ?>"/>
-                        <div class="form-group inline">
-                            <label for="start_<?= $t['reservation_id'] ?>">Start Mileage (km)</label>
-                            <input type="number" id="start_<?= $t['reservation_id'] ?>"
-                                   name="start_mileage" min="0" step="0.1" required/>
-                        </div>
-                        <button type="submit" class="btn-primary">Start Trip</button>
+                        <button type="submit" class="btn-primary btn-trip-action">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Start Trip
+                        </button>
                     </form>
 
                 <?php elseif ($t['status'] === 'dispatched'): ?>
@@ -54,22 +52,14 @@ include VIEW_PATH . '/layouts/header.php';
                           class="ajax-driver-form">
                         <?= Controller::csrfField() ?>
                         <input type="hidden" name="reservation_id" value="<?= (int)$t['reservation_id'] ?>"/>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="end_<?= $t['reservation_id'] ?>">End Mileage (km)</label>
-                                <input type="number" id="end_<?= $t['reservation_id'] ?>"
-                                       name="end_mileage" min="0" step="0.1" required/>
-                            </div>
-                            <div class="form-group">
-                                <label>Fuel Consumed (L)</label>
-                                <input type="number" name="fuel_consumed" min="0" step="0.01"/>
-                            </div>
-                            <div class="form-group full-width">
-                                <label>Trip Notes</label>
-                                <textarea name="trip_notes" rows="2" placeholder="Optional notes..."></textarea>
-                            </div>
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label>Trip Notes <span class="optional-tag">Optional</span></label>
+                            <textarea name="trip_notes" rows="2" placeholder="Any notes about this trip..."></textarea>
                         </div>
-                        <button type="submit" class="btn-success">Complete Trip</button>
+                        <button type="submit" class="btn-success btn-trip-action">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Complete Trip
+                        </button>
                     </form>
                 <?php endif; ?>
             </section>
@@ -87,6 +77,13 @@ include VIEW_PATH . '/layouts/header.php';
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = form.querySelector('button[type="submit"]');
+            const isStart = btn.textContent.trim().includes('Start');
+            const msg = isStart
+                ? 'Are you sure you want to start this trip?'
+                : 'Are you sure you want to mark this trip as complete?';
+
+            if (!confirm(msg)) return;
+
             const result = await VRS.ajax.submitForm(form, {
                 submitBtn: btn,
                 onSuccess: (data) => {
