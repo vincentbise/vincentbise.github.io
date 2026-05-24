@@ -45,7 +45,7 @@ class ReportController extends Controller {
                     SUM(status = "completed")  AS completed,
                     SUM(status = "rejected")   AS rejected,
                     SUM(status = "cancelled")  AS cancelled
-             FROM   reservations
+             FROM   vw_reservation_summary
              GROUP  BY month
              ORDER  BY month DESC
              LIMIT  12'

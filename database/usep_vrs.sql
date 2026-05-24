@@ -171,6 +171,133 @@ CREATE TABLE IF NOT EXISTS dispatch_logs (
         REFERENCES vehicles     (vehicle_id)     ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
+-- ── 7. Audit Logs (DB-level logging) ───────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_logs (
+    audit_id   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    table_name VARCHAR(64)     NOT NULL,
+    record_id  BIGINT UNSIGNED NULL,
+    action     ENUM('INSERT','UPDATE','DELETE') NOT NULL,
+    changed_by INT UNSIGNED    NULL,
+    old_data   JSON            NULL,
+    new_data   JSON            NULL,
+    changed_at TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (audit_id),
+    INDEX idx_table_record (table_name, record_id),
+    INDEX idx_changed_by (changed_by)
+) ENGINE=InnoDB;
+
+-- ── 8. Views ───────────────────────────────────────────────────────
+CREATE OR REPLACE VIEW vw_reservation_summary AS
+SELECT r.reservation_id,
+       r.reference_no,
+       r.status,
+       r.departure_date,
+       r.return_date,
+       u.full_name AS requester_name,
+       u.department,
+       v.make_model,
+       v.plate_number,
+       dl.driver_id,
+       dl.actual_departure,
+       dl.actual_return
+FROM   reservations r
+JOIN   users u ON u.user_id = r.requester_id
+LEFT JOIN vehicles v ON v.vehicle_id = r.vehicle_id
+LEFT JOIN dispatch_logs dl ON dl.reservation_id = r.reservation_id;
+
+-- ── 9. Additional Indexes ─────────────────────────────────────────
+CREATE INDEX idx_res_status_date ON reservations (status, departure_date);
+
+-- ── 10. Stored Function ────────────────────────────────────────────
+DELIMITER //
+CREATE FUNCTION fn_make_reference_no()
+RETURNS VARCHAR(20)
+NOT DETERMINISTIC
+BEGIN
+    RETURN CONCAT(
+        'VRS-',
+        DATE_FORMAT(NOW(), '%Y%m%d'),
+        '-',
+        UPPER(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 6))
+    );
+END//
+DELIMITER ;
+
+-- ── 11. Stored Procedure ───────────────────────────────────────────
+DELIMITER //
+CREATE PROCEDURE sp_create_reservation(
+    IN  p_requester_id   INT UNSIGNED,
+    IN  p_purpose         TEXT,
+    IN  p_destination     VARCHAR(255),
+    IN  p_passengers      TINYINT UNSIGNED,
+    IN  p_departure_date  DATE,
+    IN  p_departure_time  TIME,
+    IN  p_return_date     DATE,
+    IN  p_return_time     TIME,
+    IN  p_vehicle_id      INT UNSIGNED,
+    OUT o_reservation_id  INT UNSIGNED,
+    OUT o_reference_no    VARCHAR(20)
+)
+BEGIN
+    SET o_reference_no = fn_make_reference_no();
+
+    INSERT INTO reservations
+        (reference_no, requester_id, purpose, destination, passengers,
+         departure_date, departure_time, return_date, return_time, vehicle_id, status)
+    VALUES
+        (o_reference_no, p_requester_id, p_purpose, p_destination, p_passengers,
+         p_departure_date, p_departure_time, p_return_date, p_return_time, p_vehicle_id, 'pending');
+
+    SET o_reservation_id = LAST_INSERT_ID();
+END//
+DELIMITER ;
+
+-- ── 12. Triggers (Audit) ───────────────────────────────────────────
+DELIMITER //
+CREATE TRIGGER trg_reservation_status_audit
+AFTER UPDATE ON reservations
+FOR EACH ROW
+BEGIN
+    IF OLD.status <> NEW.status THEN
+        INSERT INTO audit_logs
+            (table_name, record_id, action, changed_by, old_data, new_data)
+        VALUES
+            ('reservations', NEW.reservation_id, 'UPDATE', @app_user_id,
+             JSON_OBJECT('status', OLD.status, 'remarks', OLD.remarks),
+             JSON_OBJECT('status', NEW.status, 'remarks', NEW.remarks));
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER trg_approval_audit
+AFTER INSERT ON approvals
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_logs
+        (table_name, record_id, action, changed_by, new_data)
+    VALUES
+        ('approvals', NEW.approval_id, 'INSERT', NEW.approved_by,
+         JSON_OBJECT('reservation_id', NEW.reservation_id, 'decision', NEW.decision));
+END//
+DELIMITER ;
+
+-- ── 13. Event (Auto-cancel past pending requests) ─────────────────
+DELIMITER //
+CREATE EVENT ev_auto_cancel_past_pending
+ON SCHEDULE EVERY 1 DAY
+STARTS CURRENT_TIMESTAMP + INTERVAL 1 DAY
+DO
+BEGIN
+    UPDATE reservations
+    SET status = 'cancelled',
+        remarks = 'Auto-cancelled: departure date elapsed.'
+    WHERE status = 'pending'
+      AND departure_date < CURDATE();
+END//
+DELIMITER ;
+
 
 -- ═══════════════════════════════════════════════════════════════════
 --  SEED DATA — Default accounts and sample fleet

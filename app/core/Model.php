@@ -5,6 +5,9 @@ abstract class Model {
 
     public function __construct() {
         $this->db = Database::getInstance();
+        $userId = $_SESSION['user_id'] ?? null;
+        $stmt = $this->db->prepare('SET @app_user_id = ?');
+        $stmt->execute([$userId]);
     }
 
 

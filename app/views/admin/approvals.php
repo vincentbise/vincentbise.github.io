@@ -41,6 +41,7 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
                 <div><strong>Requester:</strong> <?= htmlspecialchars($r['requester_name']) ?></div>
                 <div><strong>Department:</strong> <?= htmlspecialchars($r['department'] ?? '—') ?></div>
                 <div><strong>Destination:</strong> <?= htmlspecialchars($r['destination']) ?></div>
+                <div><strong>Vehicle:</strong> <?= htmlspecialchars(($r['make_model'] ?? '—') . ' (' . ($r['plate_number'] ?? '—') . ')') ?></div>
                 <div><strong>Departure:</strong>  <?= htmlspecialchars($r['departure_date'] . ' ' . $r['departure_time']) ?></div>
                 <div><strong>Return:</strong>     <?= htmlspecialchars($r['return_date']   . ' ' . $r['return_time']) ?></div>
                 <div><strong>Passengers:</strong> <?= (int)$r['passengers'] ?></div>
@@ -48,8 +49,10 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
             </div>
 
 
+            <?php $hasDriver = !empty($r['assigned_driver_id']); ?>
             <form method="POST" action="<?= BASE_URL ?>approvals/decide"
                   data-ajax-url="<?= BASE_URL ?>api/approvals/decide"
+                data-has-driver="<?= $hasDriver ? '1' : '0' ?>"
                   class="decision-form-block ajax-decision-form">
                 <?= Controller::csrfField() ?>
                 <input type="hidden" name="reservation_id" value="<?= (int)$r['reservation_id'] ?>"/>
@@ -63,9 +66,9 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
 
                 <div class="decision-actions">
                     <button type="submit" name="decision" value="approved"
-                            class="btn-success">✔ Approve</button>
+                        class="btn-success decision-btn">✔ Approve</button>
                     <button type="submit" name="decision" value="rejected"
-                            class="btn-danger">✘ Reject</button>
+                        class="btn-danger decision-btn">✘ Reject</button>
                 </div>
             </form>
 
@@ -87,6 +90,16 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
                 e.preventDefault();
 
                 const decision = btn.value;
+                if (decision === 'approved') {
+                    const hasDriver = form.getAttribute('data-has-driver') === '1';
+                    if (!hasDriver) {
+                        const ok = await VRS.confirm.show(
+                            'This vehicle has no assigned driver. Approval will be blocked. Continue?'
+                        );
+                        if (!ok) return;
+                    }
+                }
+
                 if (decision === 'rejected') {
                     const ok = await VRS.confirm.show('Reject this request?');
                     if (!ok) return;

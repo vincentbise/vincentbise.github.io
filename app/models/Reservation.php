@@ -42,9 +42,11 @@ class Reservation extends Model {
     /** Pending reservations (for staff review). */
     public function pending(): array {
         return $this->query(
-            'SELECT r.*, u.full_name AS requester_name, u.department
+            'SELECT r.*, u.full_name AS requester_name, u.department,
+                    v.make_model, v.plate_number, v.assigned_driver_id
              FROM   reservations r
              JOIN   users u ON u.user_id = r.requester_id
+             LEFT JOIN vehicles v ON v.vehicle_id = r.vehicle_id
              WHERE  r.status = ?
              ORDER  BY r.requested_at ASC',
             ['pending']
@@ -65,27 +67,22 @@ class Reservation extends Model {
 
     /** Create a new reservation with auto-generated reference number. */
     public function create(array $data): void {
-        $refNo = 'VRS-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
-
-        $this->execute(
-            'INSERT INTO reservations
-             (reference_no, requester_id, purpose, destination, passengers,
-              departure_date, departure_time, return_date, return_time, vehicle_id, status)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-            [
-                $refNo,
-                $data['requester_id'],
-                $data['purpose'],
-                $data['destination'],
-                $data['passengers'],
-                $data['departure_date'],
-                $data['departure_time'],
-                $data['return_date'],
-                $data['return_time'],
-                $data['vehicle_id'] ?? null,
-                'pending',
-            ]
+        $stmt = $this->db->prepare(
+            'CALL sp_create_reservation(?,?,?,?,?,?,?,?,?,@o_reservation_id,@o_reference_no)'
         );
+        $stmt->execute([
+            $data['requester_id'],
+            $data['purpose'],
+            $data['destination'],
+            $data['passengers'],
+            $data['departure_date'],
+            $data['departure_time'],
+            $data['return_date'],
+            $data['return_time'],
+            $data['vehicle_id'] ?? null,
+        ]);
+
+        $this->queryOne('SELECT @o_reservation_id, @o_reference_no');
     }
 
     /** Assign a vehicle and keep status approved. */

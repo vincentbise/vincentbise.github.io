@@ -139,6 +139,29 @@ class ReservationController extends Controller {
 
         $newStatus = $decision === 'approved' ? 'approved' : 'rejected';
 
+        if ($decision === 'approved') {
+            $reservation = $this->model->findById($id);
+            $vehicleId = (int)($reservation['vehicle_id'] ?? 0);
+
+            if ($vehicleId < 1) {
+                if ($this->isAjax()) {
+                    $this->json(['success' => false, 'message' => 'A vehicle must be selected before approval.'], 422);
+                }
+                $this->flash('error', 'A vehicle must be selected before approval.');
+                $this->redirect('approvals');
+            }
+
+            $vehicle = $this->vehicleModel->findById($vehicleId);
+            $driverId = (int)($vehicle['assigned_driver_id'] ?? 0);
+            if ($driverId < 1) {
+                if ($this->isAjax()) {
+                    $this->json(['success' => false, 'message' => 'Cannot approve: selected vehicle has no assigned driver.'], 422);
+                }
+                $this->flash('error', 'Cannot approve: selected vehicle has no assigned driver.');
+                $this->redirect('approvals');
+            }
+        }
+
         $this->model->updateStatus($id, $newStatus, $remarks ?: null);
 
         $this->approvalModel->create([
