@@ -26,7 +26,6 @@ class UserController extends Controller {
         $this->verifyCsrf();
 
         $data = [
-            'employee_id' => $this->postInput('employee_id'),
             'full_name'   => $this->postInput('full_name'),
             'email'       => $this->postInput('email'),
             'username'    => $this->postInput('username'),
@@ -37,7 +36,7 @@ class UserController extends Controller {
         ];
 
 
-        foreach (['employee_id','full_name','email','username','password'] as $f) {
+        foreach (['full_name','email','username','password'] as $f) {
             if (empty($data[$f])) {
                 if ($this->isAjax()) {
                     $this->json(['success' => false, 'message' => 'All required fields must be filled.'], 422);
@@ -62,7 +61,7 @@ class UserController extends Controller {
         } catch (\PDOException $e) {
             $msg = 'Failed to create account.';
             if (str_contains($e->getMessage(), 'Duplicate entry')) {
-                $msg = 'Employee ID, email, or username already exists.';
+                $msg = 'Email or username already exists.';
             }
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => $msg], 422);

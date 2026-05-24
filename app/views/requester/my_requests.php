@@ -74,7 +74,8 @@ include VIEW_PATH . '/layouts/header.php';
     document.querySelectorAll('.ajax-cancel-form').forEach(form => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!confirm('Cancel this reservation?')) return;
+            const ok = await VRS.confirm.show('Cancel this reservation?');
+            if (!ok) return;
 
             const btn = form.querySelector('button[type="submit"]');
             const result = await VRS.ajax.submitForm(form, {

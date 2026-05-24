@@ -148,3 +148,73 @@
         top: 70px;
     }
 }
+
+/* Confirmation Modal */
+.vrs-confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 10001;
+    padding: 18px;
+}
+
+.vrs-confirm-backdrop.is-visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.vrs-confirm {
+    background: #ffffff;
+    color: #1e1e1e;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+    width: min(420px, 92vw);
+    padding: 20px 22px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    transform: translateY(8px) scale(0.98);
+    transition: transform 0.2s ease;
+}
+
+.vrs-confirm-backdrop.is-visible .vrs-confirm {
+    transform: translateY(0) scale(1);
+}
+
+.vrs-confirm__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vrs-confirm__body h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.vrs-confirm__body p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #4b5563;
+}
+
+.vrs-confirm__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}

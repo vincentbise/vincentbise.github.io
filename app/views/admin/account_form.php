@@ -31,14 +31,6 @@ include VIEW_PATH . '/layouts/header.php';
 
                 <div class="form-grid">
 
-                    <?php if (!$isEdit): ?>
-                    <div class="form-group">
-                        <label for="employee_id">Employee ID <span class="required">*</span></label>
-                        <input type="text" id="employee_id" name="employee_id"
-                               placeholder="e.g. EMP-0010" required/>
-                    </div>
-                    <?php endif; ?>
-
                     <div class="form-group">
                         <label for="full_name">Full Name <span class="required">*</span></label>
                         <input type="text" id="full_name" name="full_name"

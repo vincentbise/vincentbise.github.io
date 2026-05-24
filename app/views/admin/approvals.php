@@ -87,7 +87,10 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
                 e.preventDefault();
 
                 const decision = btn.value;
-                if (decision === 'rejected' && !confirm('Reject this request?')) return;
+                if (decision === 'rejected') {
+                    const ok = await VRS.confirm.show('Reject this request?');
+                    if (!ok) return;
+                }
 
 
                 const formData = new FormData(form);

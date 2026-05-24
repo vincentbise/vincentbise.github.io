@@ -20,8 +20,18 @@
 
 
     document.querySelectorAll('[data-confirm]').forEach(el => {
-        el.addEventListener('click', (e) => {
-            if (!confirm(el.dataset.confirm)) e.preventDefault();
+        el.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const ok = await VRS.confirm.show(el.dataset.confirm);
+            if (!ok) return;
+
+            if (el.tagName === 'A' && el.href) {
+                window.location.href = el.href;
+                return;
+            }
+
+            const form = el.closest('form');
+            if (form) form.submit();
         });
     });
 

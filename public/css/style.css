@@ -649,6 +649,7 @@ a.nav-btn.active {
     outline: none;
     background: var(--soft);
     transition: border-color var(--transition), box-shadow var(--transition);
+    resize: none;
 }
 
 .form-group input:focus,
@@ -1148,11 +1149,27 @@ a.nav-btn.active {
 
 /* Shake animation for validation */
 @keyframes highlightShake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-6px);
+    }
+
+    40% {
+        transform: translateX(6px);
+    }
+
+    60% {
+        transform: translateX(-4px);
+    }
+
+    80% {
+        transform: translateX(4px);
+    }
 }
 
 .highlight-shake {
@@ -1239,7 +1256,7 @@ a.nav-btn.active {
 
 .btn-trip-action:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
 }
 
 .btn-trip-action:active {

@@ -105,3 +105,90 @@ VRS.notify = (function () {
         dismiss: dismiss,
     };
 })();
+
+VRS.confirm = (function () {
+    'use strict';
+
+    let backdrop = null;
+    let titleEl = null;
+    let messageEl = null;
+    let confirmBtn = null;
+    let cancelBtn = null;
+
+    function ensureModal() {
+        if (backdrop && document.body.contains(backdrop)) return;
+
+        backdrop = document.createElement('div');
+        backdrop.className = 'vrs-confirm-backdrop';
+        backdrop.innerHTML = `
+            <div class="vrs-confirm" role="dialog" aria-modal="true" aria-labelledby="vrs-confirm-title" aria-describedby="vrs-confirm-message">
+                <div class="vrs-confirm__icon" aria-hidden="true">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 7v5"></path>
+                        <path d="M12 16h.01"></path>
+                    </svg>
+                </div>
+                <div class="vrs-confirm__body">
+                    <h3 id="vrs-confirm-title">Confirm action</h3>
+                    <p id="vrs-confirm-message"></p>
+                </div>
+                <div class="vrs-confirm__actions">
+                    <button type="button" class="btn-outline" data-action="cancel">Cancel</button>
+                    <button type="button" class="btn-primary" data-action="confirm">Confirm</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(backdrop);
+
+        titleEl = backdrop.querySelector('#vrs-confirm-title');
+        messageEl = backdrop.querySelector('#vrs-confirm-message');
+        confirmBtn = backdrop.querySelector('[data-action="confirm"]');
+        cancelBtn = backdrop.querySelector('[data-action="cancel"]');
+    }
+
+    function show(message, opts = {}) {
+        ensureModal();
+
+        const title = opts.title || 'Confirm action';
+        const confirmText = opts.confirmText || 'Confirm';
+        const cancelText = opts.cancelText || 'Cancel';
+
+        titleEl.textContent = title;
+        messageEl.textContent = message || 'Are you sure you want to continue?';
+        confirmBtn.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+
+        backdrop.classList.add('is-visible');
+
+        return new Promise((resolve) => {
+            function cleanup(result) {
+                backdrop.classList.remove('is-visible');
+                confirmBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+                backdrop.removeEventListener('click', onBackdrop);
+                document.removeEventListener('keydown', onKeydown);
+                resolve(result);
+            }
+
+            function onConfirm() { cleanup(true); }
+            function onCancel() { cleanup(false); }
+            function onBackdrop(e) {
+                if (e.target === backdrop) cleanup(false);
+            }
+            function onKeydown(e) {
+                if (e.key === 'Escape') cleanup(false);
+                if (e.key === 'Enter') cleanup(true);
+            }
+
+            confirmBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
+            backdrop.addEventListener('click', onBackdrop);
+            document.addEventListener('keydown', onKeydown);
+
+            setTimeout(() => confirmBtn.focus(), 0);
+        });
+    }
+
+    return { show };
+})();

@@ -11,7 +11,6 @@ include VIEW_PATH . '/layouts/header.php';
                 <h1>Trip History</h1>
                 <p>Viewing trip history for: <strong><?= htmlspecialchars($driver['full_name']) ?></strong></p>
             </div>
-            <a href="<?= BASE_URL ?>driver/dashboard" class="btn-outline">← Back to Dashboard</a>
         </section>
 
         <?php if (!empty($flash)): ?>

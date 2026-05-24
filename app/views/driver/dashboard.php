@@ -82,7 +82,8 @@ include VIEW_PATH . '/layouts/header.php';
                 ? 'Are you sure you want to start this trip?'
                 : 'Are you sure you want to mark this trip as complete?';
 
-            if (!confirm(msg)) return;
+            const ok = await VRS.confirm.show(msg);
+            if (!ok) return;
 
             const result = await VRS.ajax.submitForm(form, {
                 submitBtn: btn,

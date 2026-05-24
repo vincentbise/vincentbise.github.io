@@ -31,7 +31,7 @@ include VIEW_PATH . '/layouts/header.php';
                 <table id="accounts-table">
                     <thead>
                         <tr>
-                            <th>Employee ID</th>
+                            <th>User ID</th>
                             <th>Full Name</th>
                             <th>Role</th>
                             <th>Department</th>
@@ -46,7 +46,7 @@ include VIEW_PATH . '/layouts/header.php';
                     <?php else: ?>
                     <?php foreach ($users as $u): ?>
                         <tr id="user-row-<?= (int)$u['user_id'] ?>">
-                            <td><?= htmlspecialchars($u['employee_id']) ?></td>
+                            <td><?= (int)$u['user_id'] ?></td>
                             <td><?= htmlspecialchars($u['full_name']) ?></td>
                             <td>
                                 <span class="role-tag role-<?= $u['role'] ?>">
@@ -103,7 +103,8 @@ include VIEW_PATH . '/layouts/header.php';
             const btn = form.querySelector('button[type="submit"]');
             const isActive = btn.dataset.isActive === '1';
 
-            if (!confirm(isActive ? 'Deactivate this account?' : 'Activate this account?')) return;
+            const ok = await VRS.confirm.show(isActive ? 'Deactivate this account?' : 'Activate this account?');
+            if (!ok) return;
 
             const result = await VRS.ajax.submitForm(form, {
                 submitBtn: btn,

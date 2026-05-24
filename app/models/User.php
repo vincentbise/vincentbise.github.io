@@ -19,12 +19,18 @@ class User extends Model {
     }
 
     public function create(array $data): void {
+        // Auto-generate employee_id from auto-increment sequence
+        $db = Database::getInstance();
+        $row = $db->query("SELECT AUTO_INCREMENT AS next_id FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'")->fetch();
+        $nextId = (int)($row['next_id'] ?? 1);
+        $employeeId = 'USR-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+
         $this->execute(
             'INSERT INTO users
              (employee_id, full_name, email, username, password_hash, role, department, contact_no)
              VALUES (?,?,?,?,?,?,?,?)',
             [
-                $data['employee_id'],
+                $employeeId,
                 $data['full_name'],
                 $data['email'],
                 $data['username'],

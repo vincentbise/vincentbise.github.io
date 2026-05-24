@@ -6,10 +6,13 @@ class ReportController extends Controller {
         $this->requireRole('admin');
 
         $db   = Database::getInstance();
-        $type = $_GET['type'] ?? 'daily';
+        $type = $_GET['type'] ?? 'utilization';
+        $allowed = ['utilization', 'monthly', 'drivers'];
+        if (!in_array($type, $allowed, true)) {
+            $type = 'utilization';
+        }
 
         $data = match ($type) {
-            'daily'       => $this->daily($db),
             'utilization' => $this->utilization($db),
             'monthly'     => $this->monthly($db),
             'drivers'     => $this->driverSummary($db),
@@ -23,28 +26,10 @@ class ReportController extends Controller {
         ]);
     }
 
-    private function daily(PDO $db): array {
-        $date = $_GET['date'] ?? date('Y-m-d');
-        $stmt = $db->prepare(
-            'SELECT r.reference_no, u.full_name AS requester, r.destination,
-                    r.departure_date, r.return_date, r.status,
-                    v.make_model, v.plate_number
-             FROM   reservations r
-             JOIN   users u ON u.user_id = r.requester_id
-             LEFT JOIN vehicles v ON v.vehicle_id = r.vehicle_id
-             WHERE  r.departure_date = ?
-             ORDER  BY r.departure_date ASC'
-        );
-        $stmt->execute([$date]);
-        return $stmt->fetchAll();
-    }
-
     private function utilization(PDO $db): array {
         $stmt = $db->query(
             'SELECT v.make_model, v.plate_number, v.status,
-                    COUNT(dl.log_id) AS trips_completed,
-                    SUM(dl.end_mileage - dl.start_mileage) AS total_km,
-                    SUM(dl.fuel_consumed) AS total_fuel
+                    COUNT(dl.log_id) AS trips_completed
              FROM   vehicles v
              LEFT JOIN dispatch_logs dl ON dl.vehicle_id = v.vehicle_id
              GROUP  BY v.vehicle_id
@@ -71,8 +56,7 @@ class ReportController extends Controller {
     private function driverSummary(PDO $db): array {
         $stmt = $db->query(
             'SELECT u.full_name AS driver, d.license_no,
-                    COUNT(dl.log_id) AS trips,
-                    SUM(dl.end_mileage - dl.start_mileage) AS total_km
+                    COUNT(dl.log_id) AS trips
              FROM   drivers d
              JOIN   users u ON u.user_id = d.user_id
              LEFT JOIN dispatch_logs dl ON dl.driver_id = d.driver_id
