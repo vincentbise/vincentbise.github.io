@@ -27,9 +27,11 @@ class AuthController extends Controller {
         if ($username === '' || $password === '') {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => 'Please fill in all fields.'], 422);
+                return;
             }
             $this->flash('login_error', 'Please fill in all fields.');
             $this->redirect('login');
+            return;
         }
 
         $user = $this->userModel->findByUsername($username);
@@ -37,17 +39,21 @@ class AuthController extends Controller {
         if ($user === null || !$this->userModel->verifyPassword($password, $user['password_hash'])) {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => 'Invalid username or password.'], 401);
+                return;
             }
             $this->flash('login_error', 'Invalid username or password.');
             $this->redirect('login');
+            return;
         }
 
         if (!(int)$user['is_active']) {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => 'Your account has been deactivated. Contact the administrator.'], 403);
+                return;
             }
             $this->flash('login_error', 'Your account has been deactivated. Contact the administrator.');
             $this->redirect('login');
+            return;
         }
 
 
@@ -67,8 +73,9 @@ class AuthController extends Controller {
             $this->json([
                 'success'  => true,
                 'message'  => 'Login successful! Redirecting…',
-                'redirect' => BASE_URL . $redirectUrl,
+                'redirect' => $this->url($redirectUrl),
             ]);
+            return;
         }
 
         $this->redirect($redirectUrl);

@@ -16,19 +16,24 @@ VRS.ajax = (function () {
         return meta ? meta.getAttribute('content') : '';
     }
 
-    /** Build the full URL relative to BASE_URL. */
+    /** Build the full URL relative to BASE_URL, routing through index.php. */
     function buildUrl(path) {
         const base = document.querySelector('meta[name="base-url"]');
         const baseUrl = base ? base.getAttribute('content') : '/';
         if (!path) return baseUrl;
 
-
+        // Already a full URL
         if (/^https?:\/\//i.test(path)) return path;
 
-
+        // Absolute path
         if (path.startsWith('/')) return window.location.origin + path;
 
-        return baseUrl + path.replace(/^\//, '');
+        // Relative path — route through index.php for compatibility
+        // (works with or without .htaccess mod_rewrite)
+        if (!path.startsWith('index.php/') && path !== 'index.php') {
+            path = 'index.php/' + path;
+        }
+        return baseUrl + path;
     }
 
     /**
@@ -62,6 +67,17 @@ VRS.ajax = (function () {
                 body: body,
                 credentials: 'same-origin',
             });
+
+            /* ── Guard: ensure the response is actually JSON ── */
+            const contentType = response.headers.get('Content-Type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Expected JSON but received:', contentType, text.substring(0, 300));
+                throw {
+                    success: false,
+                    message: 'Server returned an unexpected response. Please refresh the page and try again.',
+                };
+            }
 
             const json = await response.json();
 
@@ -97,8 +113,21 @@ VRS.ajax = (function () {
                 },
                 credentials: 'same-origin',
             });
+
+            /* ── Guard: ensure the response is actually JSON ── */
+            const contentType = response.headers.get('Content-Type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Expected JSON but received:', contentType, text.substring(0, 300));
+                throw {
+                    success: false,
+                    message: 'Server returned an unexpected response. Please refresh the page and try again.',
+                };
+            }
+
             return await response.json();
         } catch (err) {
+            if (err && err.message) throw err;
             throw { success: false, message: 'Network error.' };
         }
     }
@@ -121,10 +150,31 @@ VRS.ajax = (function () {
             const formData = new FormData(form);
             const action = form.getAttribute('data-ajax-url') || form.action;
 
-
+            /* ── Derive relative path from the action URL ── */
             const baseMeta = document.querySelector('meta[name="base-url"]');
             const baseUrl = baseMeta ? baseMeta.getAttribute('content') : '/';
-            let path = action.replace(window.location.origin, '').replace(baseUrl, '');
+            let path = action;
+
+            // Strip the full base URL first (covers absolute URLs)
+            if (path.startsWith(baseUrl)) {
+                path = path.substring(baseUrl.length);
+            } else {
+                // Fallback: strip origin, then strip the path-only portion of baseUrl
+                path = path.replace(window.location.origin, '');
+                try {
+                    const basePath = new URL(baseUrl).pathname;
+                    if (path.startsWith(basePath)) {
+                        path = path.substring(basePath.length);
+                    }
+                } catch (_) {
+                    // baseUrl is already a relative path
+                    if (path.startsWith(baseUrl)) {
+                        path = path.substring(baseUrl.length);
+                    }
+                }
+            }
+            // Remove leading slashes to get a clean relative path
+            path = path.replace(/^\/+/, '');
 
             const result = await post(path, formData);
 

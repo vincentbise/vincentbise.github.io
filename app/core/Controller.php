@@ -13,9 +13,15 @@ abstract class Controller {
         require $file;
     }
 
+    /** Build a URL relative to BASE_URL, routing through index.php. */
+    protected function url(string $path = ''): string {
+        $path = ltrim($path, '/');
+        return BASE_URL . ($path !== '' ? 'index.php/' . $path : '');
+    }
+
     /** Redirect to a URL relative to BASE_URL. */
     protected function redirect(string $path = ''): void {
-        header('Location: ' . BASE_URL . ltrim($path, '/'));
+        header('Location: ' . $this->url($path));
         exit;
     }
 

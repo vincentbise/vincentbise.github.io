@@ -72,6 +72,13 @@ class Router {
         $url = parse_url($url, PHP_URL_PATH);
         $url = trim($url ?? '', '/');
 
+        // Support index.php/route style URLs (when .htaccess rewrite is unavailable)
+        if (str_starts_with($url, 'index.php/')) {
+            $url = substr($url, strlen('index.php/'));
+        } elseif ($url === 'index.php') {
+            $url = '';
+        }
+
         $method = strtolower($_SERVER['REQUEST_METHOD']);
 
 
