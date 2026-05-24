@@ -34,6 +34,9 @@ include VIEW_PATH . '/layouts/header.php';
                     <div><dt>Destination</dt> <dd><?= htmlspecialchars($reservation['destination']) ?></dd></div>
                     <div><dt>Passengers</dt>  <dd><?= (int)$reservation['passengers'] ?></dd></div>
                     <div><dt>Purpose</dt>     <dd><?= nl2br(htmlspecialchars($reservation['purpose'])) ?></dd></div>
+                    <?php if (!empty($reservation['requester_remarks'])): ?>
+                    <div class="full-detail"><dt>Requester Justification</dt><dd><?= nl2br(htmlspecialchars($reservation['requester_remarks'])) ?></dd></div>
+                    <?php endif; ?>
                     <div><dt>Departure</dt>   <dd><?= htmlspecialchars($reservation['departure_date'] . ' ' . $reservation['departure_time']) ?></dd></div>
                     <div><dt>Return</dt>      <dd><?= htmlspecialchars($reservation['return_date']   . ' ' . $reservation['return_time'])   ?></dd></div>
                     <?php if ($reservation['make_model']): ?>

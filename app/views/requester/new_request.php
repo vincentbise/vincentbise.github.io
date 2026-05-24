@@ -64,6 +64,12 @@ $timeSlots = timeOptions();
                                min="1" max="50" value="1" required/>
                     </div>
 
+                    <div class="form-group full-width" id="occupancy-warning" style="display:none;">
+                        <div class="alert alert-warning" style="margin:0;">
+                            Occupancy is below 50%. Please add a justification below.
+                        </div>
+                    </div>
+
                     <!-- Departure Date & Time -->
                     <div class="form-group">
                         <label for="departure_date">Departure Date <span class="required">*</span></label>
@@ -96,6 +102,12 @@ $timeSlots = timeOptions();
                         </select>
                     </div>
 
+                </div>
+
+                <div class="form-group full-width" id="occupancy-remarks-group" style="display:none;">
+                    <label for="requester_remarks">Justification / Special Circumstance <span class="required">*</span></label>
+                    <textarea id="requester_remarks" name="requester_remarks" rows="3"
+                              placeholder="Explain why the passenger count is below 50% of vehicle capacity..."></textarea>
                 </div>
 
                 <!-- Vehicle Selection Section (REQUIRED) -->

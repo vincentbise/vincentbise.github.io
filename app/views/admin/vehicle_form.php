@@ -86,7 +86,7 @@ include VIEW_PATH . '/layouts/header.php';
                             <?php foreach (($drivers ?? []) as $d): ?>
                             <option value="<?= (int)$d['driver_id'] ?>"
                                 <?= (int)$assignedDriverId === (int)$d['driver_id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($d['full_name'] . ' (License: ' . $d['license_no'] . ')') ?>
+                                <?= htmlspecialchars($d['full_name']) ?>
                             </option>
                             <?php endforeach; ?>
                         </select>

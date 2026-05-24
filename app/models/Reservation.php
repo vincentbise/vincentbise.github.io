@@ -68,7 +68,7 @@ class Reservation extends Model {
     /** Create a new reservation with auto-generated reference number. */
     public function create(array $data): void {
         $stmt = $this->db->prepare(
-            'CALL sp_create_reservation(?,?,?,?,?,?,?,?,?,@o_reservation_id,@o_reference_no)'
+            'CALL sp_create_reservation(?,?,?,?,?,?,?,?,?,?,@o_reservation_id,@o_reference_no)'
         );
         $stmt->execute([
             $data['requester_id'],
@@ -80,6 +80,7 @@ class Reservation extends Model {
             $data['return_date'],
             $data['return_time'],
             $data['vehicle_id'] ?? null,
+            $data['requester_remarks'] ?? null,
         ]);
 
         $this->queryOne('SELECT @o_reservation_id, @o_reference_no');

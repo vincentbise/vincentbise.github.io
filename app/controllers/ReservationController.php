@@ -230,6 +230,7 @@ class ReservationController extends Controller {
             'return_date'    => $_POST['return_date']         ?? '',
             'return_time'    => $_POST['return_time']         ?? '',
             'vehicle_id'     => !empty($_POST['vehicle_id']) ? (int)$_POST['vehicle_id'] : null,
+            'requester_remarks' => $this->postInput('requester_remarks'),
         ];
 
 
@@ -250,6 +251,35 @@ class ReservationController extends Controller {
             }
             $this->flash('error', 'Please select a vehicle for this trip.');
             $this->redirect('requester/new');
+        }
+
+        $vehicle = $this->vehicleModel->findById((int)$data['vehicle_id']);
+        if (!$vehicle) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => 'Selected vehicle not found.'], 422);
+            }
+            $this->flash('error', 'Selected vehicle not found.');
+            $this->redirect('requester/new');
+        }
+
+        $capacity = (int)($vehicle['capacity'] ?? 0);
+        if ($capacity > 0 && $data['passengers'] > $capacity) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => 'Passenger count exceeds vehicle capacity.'], 422);
+            }
+            $this->flash('error', 'Passenger count exceeds vehicle capacity.');
+            $this->redirect('requester/new');
+        }
+
+        if ($capacity > 0) {
+            $occupancy = ($data['passengers'] / $capacity) * 100;
+            if ($occupancy < 50 && empty($data['requester_remarks'])) {
+                if ($this->isAjax()) {
+                    $this->json(['success' => false, 'message' => 'Please provide a justification for low occupancy.'], 422);
+                }
+                $this->flash('error', 'Please provide a justification for low occupancy.');
+                $this->redirect('requester/new');
+            }
         }
 
 

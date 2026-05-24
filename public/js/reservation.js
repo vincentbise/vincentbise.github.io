@@ -7,6 +7,10 @@
     const submitBtn   = document.getElementById('submit-btn');
     const depDateEl   = document.getElementById('departure_date');
     const retDateEl   = document.getElementById('return_date');
+    const passengersEl = document.getElementById('passengers');
+    const occupancyWarning = document.getElementById('occupancy-warning');
+    const occupancyRemarksGroup = document.getElementById('occupancy-remarks-group');
+    const requesterRemarksEl = document.getElementById('requester_remarks');
 
     if (!form) return;
 
@@ -32,6 +36,7 @@
     let vehiclesData = [];
 
     if (typeFilter) typeFilter.addEventListener('change', fetchVehicles);
+    if (passengersEl) passengersEl.addEventListener('input', handlePassengerChange);
     if (vehicleSelect) vehicleSelect.addEventListener('change', handleVehicleChange);
 
     // Initial fetch
@@ -41,6 +46,7 @@
         if (!vehicleSelect) return;
 
         const type = typeFilter ? typeFilter.value : 'all';
+        const pax = passengersEl ? Math.max(1, parseInt(passengersEl.value || '1', 10)) : 1;
 
         // Clear select options and disable it while loading
         vehicleSelect.innerHTML = '<option value="">Searching vehicles...</option>';
@@ -49,7 +55,7 @@
 
         const baseMeta = document.querySelector('meta[name="base-url"]');
         const baseUrl  = baseMeta ? baseMeta.getAttribute('content') : '/';
-        const url = `${baseUrl}api/vehicles/available?type=${encodeURIComponent(type)}&capacity=1`;
+        const url = `${baseUrl}api/vehicles/available?type=${encodeURIComponent(type)}&capacity=${encodeURIComponent(pax)}`;
 
         fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -95,7 +101,7 @@
             data.vehicles.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.vehicle_id;
-                opt.textContent = `${v.make_model} (${v.plate_number}) — ${v.capacity} pax`;
+                opt.textContent = `${v.make_model} — ${v.capacity} pax`;
                 vehicleSelect.appendChild(opt);
             });
         })
@@ -116,14 +122,51 @@
 
         if (!val) {
             hideDetails();
+            updateOccupancy(null);
             return;
         }
 
         const vehicle = vehiclesData.find(v => String(v.vehicle_id) === String(val));
         if (vehicle) {
             showDetails(vehicle);
+            updateOccupancy(vehicle);
         } else {
             hideDetails();
+            updateOccupancy(null);
+        }
+    }
+
+    function handlePassengerChange() {
+        fetchVehicles();
+        const vehicle = getSelectedVehicle();
+        if (vehicle && passengersEl) {
+            const pax = parseInt(passengersEl.value || '0', 10) || 0;
+            if (pax > 0 && pax > vehicle.capacity) {
+                vehicleSelect.value = '';
+                hideDetails();
+                VRS.notify.warning('Selected vehicle capacity is lower than passenger count. Please choose another vehicle.');
+            }
+        }
+        updateOccupancy(vehicle);
+    }
+
+    function getSelectedVehicle() {
+        if (!vehicleSelect || !vehicleSelect.value) return null;
+        return vehiclesData.find(v => String(v.vehicle_id) === String(vehicleSelect.value)) || null;
+    }
+
+    function updateOccupancy(vehicle) {
+        if (!passengersEl) return;
+        const pax = parseInt(passengersEl.value || '0', 10) || 0;
+        const capacity = vehicle ? parseInt(vehicle.capacity || '0', 10) || 0 : 0;
+        if (pax > 0 && capacity > 0) {
+            const rate = (pax / capacity) * 100;
+            const below = rate < 50;
+            if (occupancyWarning) occupancyWarning.style.display = below ? 'block' : 'none';
+            if (occupancyRemarksGroup) occupancyRemarksGroup.style.display = below ? 'block' : 'none';
+        } else {
+            if (occupancyWarning) occupancyWarning.style.display = 'none';
+            if (occupancyRemarksGroup) occupancyRemarksGroup.style.display = 'none';
         }
     }
 
@@ -182,6 +225,27 @@
             }
             if (vehicleSelect) vehicleSelect.style.borderColor = 'var(--danger)';
             return;
+        }
+
+        const selectedVehicle = getSelectedVehicle();
+        if (selectedVehicle && passengersEl) {
+            const pax = parseInt(passengersEl.value || '0', 10) || 0;
+            if (pax > 0 && pax > selectedVehicle.capacity) {
+                VRS.notify.warning('Passenger count exceeds vehicle capacity.');
+                return;
+            }
+
+            const rate = (pax / selectedVehicle.capacity) * 100;
+            if (rate < 50) {
+                const remarks = requesterRemarksEl ? requesterRemarksEl.value.trim() : '';
+                if (!remarks) {
+                    VRS.notify.warning('Please provide a justification for low occupancy.');
+                    if (occupancyRemarksGroup) {
+                        occupancyRemarksGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+            }
         }
 
         if (depDateEl && depDateEl.value < today) {

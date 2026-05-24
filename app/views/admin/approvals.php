@@ -42,6 +42,9 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
                 <div><strong>Department:</strong> <?= htmlspecialchars($r['department'] ?? '—') ?></div>
                 <div><strong>Destination:</strong> <?= htmlspecialchars($r['destination']) ?></div>
                 <div><strong>Vehicle:</strong> <?= htmlspecialchars(($r['make_model'] ?? '—') . ' (' . ($r['plate_number'] ?? '—') . ')') ?></div>
+                <?php if (!empty($r['requester_remarks'])): ?>
+                <div class="full-detail"><strong>Requester Justification:</strong> <?= nl2br(htmlspecialchars($r['requester_remarks'])) ?></div>
+                <?php endif; ?>
                 <div><strong>Departure:</strong>  <?= htmlspecialchars($r['departure_date'] . ' ' . $r['departure_time']) ?></div>
                 <div><strong>Return:</strong>     <?= htmlspecialchars($r['return_date']   . ' ' . $r['return_time']) ?></div>
                 <div><strong>Passengers:</strong> <?= (int)$r['passengers'] ?></div>

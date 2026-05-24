@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS reservations (
                        'rejected',
                        'cancelled'
                      ) NOT NULL DEFAULT 'pending',
+        requester_remarks TEXT         NULL,
     remarks          TEXT          NULL,
     requested_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -171,7 +172,7 @@ CREATE TABLE IF NOT EXISTS dispatch_logs (
         REFERENCES vehicles     (vehicle_id)     ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
--- ── 7. Audit Logs (DB-level logging) ───────────────────────────────
+-- ── 7. Audit Logs ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS audit_logs (
     audit_id   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     table_name VARCHAR(64)     NOT NULL,
@@ -207,13 +208,27 @@ LEFT JOIN vehicles v ON v.vehicle_id = r.vehicle_id
 LEFT JOIN dispatch_logs dl ON dl.reservation_id = r.reservation_id;
 
 -- ── 9. Additional Indexes ─────────────────────────────────────────
+SET @idx := (
+        SELECT COUNT(*)
+        FROM information_schema.statistics
+        WHERE table_schema = DATABASE()
+            AND table_name = 'reservations'
+            AND index_name = 'idx_res_status_date'
+);
+SET @sql := IF(@idx > 0, 'DROP INDEX idx_res_status_date ON reservations', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 CREATE INDEX idx_res_status_date ON reservations (status, departure_date);
 
 -- ── 10. Stored Function ────────────────────────────────────────────
 DELIMITER //
+
+DROP FUNCTION IF EXISTS fn_make_reference_no//
 CREATE FUNCTION fn_make_reference_no()
 RETURNS VARCHAR(20)
 NOT DETERMINISTIC
+NO SQL
 BEGIN
     RETURN CONCAT(
         'VRS-',
@@ -222,10 +237,12 @@ BEGIN
         UPPER(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 6))
     );
 END//
+
 DELIMITER ;
 
 -- ── 11. Stored Procedure ───────────────────────────────────────────
 DELIMITER //
+DROP PROCEDURE IF EXISTS sp_create_reservation//
 CREATE PROCEDURE sp_create_reservation(
     IN  p_requester_id   INT UNSIGNED,
     IN  p_purpose         TEXT,
@@ -236,6 +253,7 @@ CREATE PROCEDURE sp_create_reservation(
     IN  p_return_date     DATE,
     IN  p_return_time     TIME,
     IN  p_vehicle_id      INT UNSIGNED,
+    IN  p_requester_remarks TEXT,
     OUT o_reservation_id  INT UNSIGNED,
     OUT o_reference_no    VARCHAR(20)
 )
@@ -244,10 +262,10 @@ BEGIN
 
     INSERT INTO reservations
         (reference_no, requester_id, purpose, destination, passengers,
-         departure_date, departure_time, return_date, return_time, vehicle_id, status)
+         departure_date, departure_time, return_date, return_time, vehicle_id, requester_remarks, status)
     VALUES
         (o_reference_no, p_requester_id, p_purpose, p_destination, p_passengers,
-         p_departure_date, p_departure_time, p_return_date, p_return_time, p_vehicle_id, 'pending');
+         p_departure_date, p_departure_time, p_return_date, p_return_time, p_vehicle_id, p_requester_remarks, 'pending');
 
     SET o_reservation_id = LAST_INSERT_ID();
 END//
@@ -255,6 +273,7 @@ DELIMITER ;
 
 -- ── 12. Triggers (Audit) ───────────────────────────────────────────
 DELIMITER //
+DROP TRIGGER IF EXISTS trg_reservation_status_audit//
 CREATE TRIGGER trg_reservation_status_audit
 AFTER UPDATE ON reservations
 FOR EACH ROW
@@ -271,6 +290,7 @@ END//
 DELIMITER ;
 
 DELIMITER //
+DROP TRIGGER IF EXISTS trg_approval_audit//
 CREATE TRIGGER trg_approval_audit
 AFTER INSERT ON approvals
 FOR EACH ROW
@@ -283,8 +303,9 @@ BEGIN
 END//
 DELIMITER ;
 
--- ── 13. Event (Auto-cancel past pending requests) ─────────────────
+-- ── 13. Event ─────────────────────────────────────────────────────
 DELIMITER //
+DROP EVENT IF EXISTS ev_auto_cancel_past_pending//
 CREATE EVENT ev_auto_cancel_past_pending
 ON SCHEDULE EVERY 1 DAY
 STARTS CURRENT_TIMESTAMP + INTERVAL 1 DAY
