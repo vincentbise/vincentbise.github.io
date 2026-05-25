@@ -1,8 +1,6 @@
 <?php
-// Approval Model
 class Approval extends Model {
 
-    /** All approvals for a specific reservation, with approver name. */
     public function forReservation(int $reservationId): array {
         return $this->query(
             'SELECT a.*, u.full_name AS approver_name
@@ -14,7 +12,6 @@ class Approval extends Model {
         );
     }
 
-    /** Record an approval decision. */
     public function create(array $data): void {
         $this->execute(
             'INSERT INTO approvals

@@ -1,6 +1,6 @@
 /* Responsive Breakpoints */
 
-/* Desktop (769px+) */
+/* Desktop */
 @media (min-width: 769px) {
     .header-right {
         display: flex;
@@ -15,7 +15,7 @@
     }
 }
 
-/* Mobile (768px-) */
+/* Mobile */
 @media (max-width: 768px) {
 
 

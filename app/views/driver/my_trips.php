@@ -10,7 +10,6 @@ include VIEW_PATH . '/layouts/header.php';
         <section class="hero">
             <div>
                 <h1>Trip History</h1>
-                <p>Viewing trip history for: <strong><?= htmlspecialchars($driver['full_name']) ?></strong></p>
             </div>
         </section>
 

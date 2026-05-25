@@ -13,7 +13,6 @@ if (!isset($types[$currentType])) {
 }
 $currentLabel = $types[$currentType] ?? 'Report';
 ?>
-
 <div class="wrap">
     <main class="content">
 
@@ -91,14 +90,13 @@ $currentLabel = $types[$currentType] ?? 'Report';
                 <div class="table-wrap">
                     <table>
                         <thead><tr>
-                            <th>Driver</th><th>License No.</th>
+                            <th>Driver</th>
                             <th>Trips Completed</th>
                         </tr></thead>
                         <tbody>
                         <?php foreach ($data as $r): ?>
                         <tr>
                             <td><?= htmlspecialchars($r['driver']) ?></td>
-                            <td><?= htmlspecialchars($r['license_no']) ?></td>
                             <td><?= (int)$r['trips'] ?></td>
                         </tr>
                         <?php endforeach; ?>

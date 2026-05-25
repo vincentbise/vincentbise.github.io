@@ -1,5 +1,4 @@
 <?php
-// Vehicle Model
 class Vehicle extends Model {
 
     public function all(): array {
@@ -12,11 +11,9 @@ class Vehicle extends Model {
         );
     }
 
-    /** Available vehicles for assignment (with assigned driver info). */
     public function available(): array {
         return $this->query(
-            'SELECT v.*, u.full_name AS assigned_driver_name, d.driver_id AS assigned_driver_db_id,
-                    d.license_no AS assigned_driver_license
+            'SELECT v.*, u.full_name AS assigned_driver_name, d.driver_id AS assigned_driver_db_id
              FROM   vehicles v
              LEFT JOIN drivers d ON d.driver_id = v.assigned_driver_id
              LEFT JOIN users u ON u.user_id = d.user_id
@@ -26,7 +23,6 @@ class Vehicle extends Model {
         );
     }
 
-    /** Available vehicles filtered by type and minimum capacity. */
     public function availableByFilter(?string $type = null, int $minCapacity = 1): array {
         $sql = 'SELECT v.*, u.full_name AS assigned_driver_name
                 FROM   vehicles v
@@ -35,6 +31,25 @@ class Vehicle extends Model {
                 WHERE  v.status = ?
                   AND  v.capacity >= ?';
         $params = ['available', $minCapacity];
+
+        if ($type && $type !== 'all') {
+            $sql .= ' AND v.vehicle_type = ?';
+            $params[] = $type;
+        }
+
+        $sql .= ' ORDER BY v.capacity ASC, v.make_model';
+
+        return $this->query($sql, $params);
+    }
+
+    public function requestableByFilter(?string $type = null, int $minCapacity = 1): array {
+        $sql = 'SELECT v.*, u.full_name AS assigned_driver_name
+                FROM   vehicles v
+                LEFT JOIN drivers d ON d.driver_id = v.assigned_driver_id
+                LEFT JOIN users u ON u.user_id = d.user_id
+                WHERE  v.status IN (?, ?)
+                  AND  v.capacity >= ?';
+        $params = ['available', 'in_use', $minCapacity];
 
         if ($type && $type !== 'all') {
             $sql .= ' AND v.vehicle_type = ?';

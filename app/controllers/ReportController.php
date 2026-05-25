@@ -1,5 +1,4 @@
 <?php
-// ReportController
 class ReportController extends Controller {
 
     public function index(): void {
@@ -55,7 +54,7 @@ class ReportController extends Controller {
 
     private function driverSummary(PDO $db): array {
         $stmt = $db->query(
-            'SELECT u.full_name AS driver, d.license_no,
+            'SELECT u.full_name AS driver,
                     COUNT(dl.log_id) AS trips
              FROM   drivers d
              JOIN   users u ON u.user_id = d.user_id

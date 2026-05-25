@@ -1,5 +1,4 @@
 <?php
-// ReservationController
 class ReservationController extends Controller {
 
     private Reservation $model;
@@ -30,7 +29,6 @@ class ReservationController extends Controller {
         $reservation = $this->model->findById($id);
         if (!$reservation) { http_response_code(404); die('Not found.'); }
 
-        // Look up dispatch log for driver info display
         $logModel    = new DispatchLog();
         $dispatchLog = $logModel->findByReservation($id);
 
@@ -68,7 +66,6 @@ class ReservationController extends Controller {
             $this->redirect("admin/reservations/view?id={$id}");
         }
 
-        // Auto-resolve driver from vehicle's assigned_driver_id in fleet management
         $vehicle = $this->vehicleModel->findById($vehicleId);
         if (!$vehicle) {
             if ($this->isAjax()) {
@@ -120,6 +117,7 @@ class ReservationController extends Controller {
         $this->view('admin.approvals', [
             'reservations' => $reservations,
             'flash'        => $this->getFlash('success'),
+            'error'        => $this->getFlash('error'),
         ]);
     }
 
@@ -134,6 +132,16 @@ class ReservationController extends Controller {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => 'Invalid decision.'], 422);
             }
+            $this->redirect('approvals');
+        }
+
+        $oldestId = $this->model->oldestPendingId();
+        if ($oldestId && $oldestId !== $id) {
+            $msg = 'Please review requests in order. The oldest pending request must be decided first.';
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => $msg], 409);
+            }
+            $this->flash('error', $msg);
             $this->redirect('approvals');
         }
 
@@ -160,6 +168,23 @@ class ReservationController extends Controller {
                 $this->flash('error', 'Cannot approve: selected vehicle has no assigned driver.');
                 $this->redirect('approvals');
             }
+
+            if ($this->model->hasVehicleOverlap(
+                $vehicleId,
+                $reservation['departure_date'],
+                $reservation['departure_time'],
+                $reservation['return_date'],
+                $reservation['return_time'],
+                ['approved', 'dispatched'],
+                $id
+            )) {
+                $msg = 'Cannot approve: vehicle schedule overlaps another approved or dispatched trip.';
+                if ($this->isAjax()) {
+                    $this->json(['success' => false, 'message' => $msg], 409);
+                }
+                $this->flash('error', $msg);
+                $this->redirect('approvals');
+            }
         }
 
         $this->model->updateStatus($id, $newStatus, $remarks ?: null);
@@ -172,7 +197,6 @@ class ReservationController extends Controller {
             'remarks'        => $remarks ?: null,
         ]);
 
-        // When approved, auto-create dispatch log using vehicle's assigned driver
         if ($decision === 'approved') {
             $reservation = $this->model->findById($id);
             if ($reservation && $reservation['vehicle_id']) {
@@ -181,7 +205,6 @@ class ReservationController extends Controller {
 
                 if ($driverId > 0) {
                     $logModel = new DispatchLog();
-                    // Only create if no dispatch log exists yet
                     $existing = $logModel->findByReservation($id);
                     if (!$existing) {
                         $logModel->create([
@@ -244,7 +267,6 @@ class ReservationController extends Controller {
             }
         }
 
-        // Vehicle selection is required
         if (empty($data['vehicle_id'])) {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => 'Please select a vehicle for this trip.'], 422);
@@ -296,6 +318,22 @@ class ReservationController extends Controller {
                 $this->json(['success' => false, 'message' => 'Return date must be on or after departure date.'], 422);
             }
             $this->flash('error', 'Return date must be on or after departure date.');
+            $this->redirect('requester/new');
+        }
+
+        if ($this->model->hasVehicleOverlap(
+            (int)$data['vehicle_id'],
+            $data['departure_date'],
+            $data['departure_time'],
+            $data['return_date'],
+            $data['return_time'],
+            ['dispatched']
+        )) {
+            $msg = 'Selected vehicle is currently dispatched during that time.';
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => $msg], 409);
+            }
+            $this->flash('error', $msg);
             $this->redirect('requester/new');
         }
 

@@ -1,5 +1,4 @@
 <?php
-// DriverController
 class DriverController extends Controller {
 
     private Driver      $driverModel;
@@ -28,6 +27,7 @@ class DriverController extends Controller {
         $this->verifyCsrf();
 
         $reservationId = (int)($_POST['reservation_id'] ?? 0);
+        $actualPassengers = (int)($_POST['actual_passengers'] ?? 0);
 
         $reservation = $this->reservationModel->findById($reservationId);
         $driver      = $this->driverModel->findByUserId((int)$_SESSION['user_id']);
@@ -39,14 +39,63 @@ class DriverController extends Controller {
             $this->redirect('driver/dashboard');
         }
 
+        if ($reservation['status'] === 'dispatched') {
+            $msg = 'This trip is already in progress.';
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => $msg], 409);
+            }
+            $this->flash('error', $msg);
+            $this->redirect('driver/dashboard');
+        }
+
+        if ($reservation['status'] === 'completed') {
+            $msg = 'This trip is already completed.';
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => $msg], 409);
+            }
+            $this->flash('error', $msg);
+            $this->redirect('driver/dashboard');
+        }
+
+        if ($this->logModel->driverHasActiveTrip((int)$driver['driver_id'])) {
+            $msg = 'You cannot start another trip while you are dispatched.';
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => $msg], 409);
+            }
+            $this->flash('error', $msg);
+            $this->redirect('driver/dashboard');
+        }
+
+        if ($actualPassengers < 1) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => 'Please enter the passenger count before starting the trip.'], 422);
+            }
+            $this->flash('error', 'Please enter the passenger count before starting the trip.');
+            $this->redirect('driver/dashboard');
+        }
+
+        $vehicleId = (int)($reservation['vehicle_id'] ?? 0);
+        if ($vehicleId > 0) {
+            $vehicle = $this->vehicleModel->findById($vehicleId);
+            $capacity = (int)($vehicle['capacity'] ?? 0);
+            if ($capacity > 0 && $actualPassengers > $capacity) {
+                if ($this->isAjax()) {
+                    $this->json(['success' => false, 'message' => 'Passenger count exceeds vehicle capacity.'], 422);
+                }
+                $this->flash('error', 'Passenger count exceeds vehicle capacity.');
+                $this->redirect('driver/dashboard');
+            }
+        }
+
         $existingLog = $this->logModel->findByReservation($reservationId);
         if ($existingLog) {
-            $this->logModel->startTrip($reservationId, 0);
+            $this->logModel->startTrip($reservationId, 0, $actualPassengers);
         } else {
             $this->logModel->create([
                 'reservation_id' => $reservationId,
                 'driver_id'      => (int)$driver['driver_id'],
                 'vehicle_id'     => (int)$reservation['vehicle_id'],
+                'actual_passengers' => $actualPassengers,
                 'start_mileage'  => 0,
             ]);
         }

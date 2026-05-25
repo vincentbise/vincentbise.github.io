@@ -1,8 +1,6 @@
 <?php
-// Reservation Model
 class Reservation extends Model {
 
-    /** All reservations with requester and vehicle info. */
     public function all(): array {
         return $this->query(
             'SELECT r.*, u.full_name AS requester_name, u.department,
@@ -14,7 +12,6 @@ class Reservation extends Model {
         );
     }
 
-    /** Find a reservation by ID with full details. */
     public function findById(int $id): ?array {
         return $this->queryOne(
             'SELECT r.*, u.full_name AS requester_name, u.department,
@@ -27,7 +24,6 @@ class Reservation extends Model {
         );
     }
 
-    /** Reservations by requester with vehicle info. */
     public function byRequester(int $userId): array {
         return $this->query(
             'SELECT r.*, v.make_model, v.plate_number
@@ -39,7 +35,6 @@ class Reservation extends Model {
         );
     }
 
-    /** Pending reservations (for staff review). */
     public function pending(): array {
         return $this->query(
             'SELECT r.*, u.full_name AS requester_name, u.department,
@@ -53,7 +48,18 @@ class Reservation extends Model {
         );
     }
 
-    /** Approved reservations (ready for assignment). */
+    public function oldestPendingId(): ?int {
+        $row = $this->queryOne(
+            'SELECT reservation_id
+             FROM   reservations
+             WHERE  status = ?
+             ORDER  BY requested_at ASC, reservation_id ASC
+             LIMIT  1',
+            ['pending']
+        );
+        return $row ? (int)$row['reservation_id'] : null;
+    }
+
     public function approved(): array {
         return $this->query(
             'SELECT r.*, u.full_name AS requester_name, u.department
@@ -65,7 +71,6 @@ class Reservation extends Model {
         );
     }
 
-    /** Create a new reservation with auto-generated reference number. */
     public function create(array $data): void {
         $stmt = $this->db->prepare(
             'CALL sp_create_reservation(?,?,?,?,?,?,?,?,?,?,@o_reservation_id,@o_reference_no)'
@@ -86,7 +91,6 @@ class Reservation extends Model {
         $this->queryOne('SELECT @o_reservation_id, @o_reference_no');
     }
 
-    /** Assign a vehicle and keep status approved. */
     public function assignVehicle(int $reservationId, int $vehicleId): void {
         $this->execute(
             'UPDATE reservations SET vehicle_id = ?, status = ? WHERE reservation_id = ?',
@@ -94,7 +98,6 @@ class Reservation extends Model {
         );
     }
 
-    /** Update status (and optionally remarks). */
     public function updateStatus(int $id, string $status, ?string $remarks = null): void {
         if ($remarks !== null) {
             $this->execute(
@@ -109,7 +112,40 @@ class Reservation extends Model {
         }
     }
 
-    /** Cancel a reservation (only if requester owns it and it's still pending). */
+    public function hasVehicleOverlap(
+        int $vehicleId,
+        string $startDate,
+        string $startTime,
+        string $endDate,
+        string $endTime,
+        array $statuses,
+        ?int $excludeReservationId = null
+    ): bool {
+        if (empty($statuses)) {
+            return false;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($statuses), '?'));
+        $sql = 'SELECT COUNT(*) AS n
+                FROM   reservations
+                WHERE  vehicle_id = ?
+                  AND  status IN (' . $placeholders . ')
+                  AND  CONCAT(departure_date, " ", departure_time) < ?
+                  AND  CONCAT(return_date, " ", return_time) > ?';
+
+        $start = $startDate . ' ' . $startTime;
+        $end   = $endDate . ' ' . $endTime;
+        $params = array_merge([$vehicleId], $statuses, [$end, $start]);
+
+        if ($excludeReservationId !== null) {
+            $sql .= ' AND reservation_id <> ?';
+            $params[] = $excludeReservationId;
+        }
+
+        $row = $this->queryOne($sql, $params);
+        return (int)($row['n'] ?? 0) > 0;
+    }
+
     public function cancel(int $id, int $requesterId): void {
         $this->execute(
             'UPDATE reservations SET status = ?
@@ -117,8 +153,6 @@ class Reservation extends Model {
             ['cancelled', $id, $requesterId, 'pending']
         );
     }
-
-
 
     public function countByStatus(string $status): int {
         $row = $this->queryOne(
@@ -132,7 +166,6 @@ class Reservation extends Model {
         return (int)($row['n'] ?? 0);
     }
 
-    /** Reservations for a specific month. */
     public function byMonth(int $year, int $month): array {
         return $this->query(
             'SELECT r.*, u.full_name AS requester_name, v.make_model, v.plate_number
@@ -145,7 +178,6 @@ class Reservation extends Model {
         );
     }
 
-    /** Active trips (approved / dispatched) for a specific driver via dispatch_logs. */
     public function activeForDriver(int $driverId): array {
         return $this->query(
             'SELECT r.*, v.make_model, v.plate_number,
@@ -157,6 +189,17 @@ class Reservation extends Model {
                AND  r.status IN (?,?)
              ORDER  BY r.departure_date ASC',
             [$driverId, 'approved', 'dispatched']
+        );
+    }
+
+    public function dispatchedWindowsForVehicle(int $vehicleId): array {
+        return $this->query(
+            'SELECT reference_no, departure_date, departure_time, return_date, return_time
+             FROM   reservations
+             WHERE  vehicle_id = ?
+               AND  status = ?
+             ORDER  BY departure_date ASC, departure_time ASC',
+            [$vehicleId, 'dispatched']
         );
     }
 }

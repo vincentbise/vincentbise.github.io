@@ -1,5 +1,3 @@
-/* login.js — Login page interactions with AJAX */
-
 (function () {
     'use strict';
 

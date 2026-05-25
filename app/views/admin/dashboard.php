@@ -1,8 +1,12 @@
 <?php
 $pageTitle = 'Admin Dashboard';
+$totalReservations = $totalReservations ?? 0;
+$pending = $pending ?? 0;
+$availableVehicles = $availableVehicles ?? 0;
+$availableDrivers = $availableDrivers ?? 0;
+$recentReservations = $recentReservations ?? [];
 include VIEW_PATH . '/layouts/header.php';
 ?>
-
 <div class="wrap">
     <main class="content">
 

@@ -2,7 +2,7 @@
 $pageTitle = 'Pending Approvals';
 include VIEW_PATH . '/layouts/header.php';
 $levelLabel = 'Staff Review';
-$levelDesc  = 'Review and approve or reject pending reservation requests.';
+$levelDesc  = 'Approve or reject reservation requests.';
 ?>
 
 <div class="wrap">
@@ -17,6 +17,10 @@ $levelDesc  = 'Review and approve or reject pending reservation requests.';
 
         <?php if (!empty($flash)): ?>
             <div class="alert alert-success"><?= htmlspecialchars($flash) ?></div>
+        <?php endif; ?>
+
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <?php if (empty($reservations)): ?>

@@ -1,9 +1,8 @@
 <?php
-// User Model
 class User extends Model {
 
     public function all(): array {
-        return $this->query('SELECT * FROM users ORDER BY created_at DESC');
+        return $this->query('SELECT * FROM users ORDER BY user_id ASC');
     }
 
     public function findById(int $id): ?array {
@@ -18,19 +17,12 @@ class User extends Model {
         return password_verify($password, $hash);
     }
 
-    public function create(array $data): void {
-        // Auto-generate employee_id from auto-increment sequence
-        $db = Database::getInstance();
-        $row = $db->query("SELECT AUTO_INCREMENT AS next_id FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'")->fetch();
-        $nextId = (int)($row['next_id'] ?? 1);
-        $employeeId = 'USR-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-
+    public function create(array $data): int {
         $this->execute(
             'INSERT INTO users
-             (employee_id, full_name, email, username, password_hash, role, department, contact_no)
-             VALUES (?,?,?,?,?,?,?,?)',
+             (full_name, email, username, password_hash, role, department, contact_no)
+             VALUES (?,?,?,?,?,?,?)',
             [
-                $employeeId,
                 $data['full_name'],
                 $data['email'],
                 $data['username'],
@@ -40,6 +32,8 @@ class User extends Model {
                 $data['contact_no'] ?? null,
             ]
         );
+
+        return (int)$this->lastId();
     }
 
     public function update(int $id, array $data): void {
@@ -52,7 +46,6 @@ class User extends Model {
             $data['contact_no'] ?? null,
         ];
 
-        // Only update password if provided
         if (!empty($data['password'])) {
             $sql .= ', password_hash=?';
             $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
@@ -64,12 +57,35 @@ class User extends Model {
         $this->execute($sql, $params);
     }
 
-    /** Toggle the is_active flag. */
+    public function updateProfile(int $id, array $data): void {
+        $sql = 'UPDATE users SET full_name=?, email=?, department=?, contact_no=?';
+        $params = [
+            $data['full_name'],
+            $data['email'],
+            $data['department'] ?? null,
+            $data['contact_no'] ?? null,
+        ];
+
+        if (!empty($data['password'])) {
+            $sql .= ', password_hash=?';
+            $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+
+        $sql .= ' WHERE user_id=?';
+        $params[] = $id;
+
+        $this->execute($sql, $params);
+    }
+
     public function toggleActive(int $id): void {
         $this->execute(
             'UPDATE users SET is_active = NOT is_active WHERE user_id = ?',
             [$id]
         );
+    }
+
+    public function delete(int $id): void {
+        $this->execute('DELETE FROM users WHERE user_id = ?', [$id]);
     }
 
     public function countAll(): int {

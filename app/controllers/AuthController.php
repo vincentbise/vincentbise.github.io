@@ -1,5 +1,4 @@
 <?php
-// AuthController
 class AuthController extends Controller {
 
     private User $userModel;
@@ -98,7 +97,7 @@ class AuthController extends Controller {
         return $map[$role] ?? '';
     }
 
-    private function redirectByRole(string $role): never {
+    private function redirectByRole(string $role): void {
         $this->redirect($this->getRedirectUrl($role));
     }
 }

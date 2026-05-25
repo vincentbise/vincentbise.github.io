@@ -1,12 +1,3 @@
-/**
- * notifications.js — Toast notification system for USeP VRS
- * Usage:
- *   VRS.notify.success('Reservation submitted!');
- *   VRS.notify.error('Something went wrong.');
- *   VRS.notify.warning('Please check your input.');
- *   VRS.notify.info('Your session will expire soon.');
- */
-
 window.VRS = window.VRS || {};
 
 VRS.notify = (function () {
@@ -80,7 +71,6 @@ VRS.notify = (function () {
         toast.addEventListener('animationend', () => {
             toast.remove();
         }, { once: true });
-        // Fallback if animationend doesn't fire
         setTimeout(() => {
             if (toast.parentNode) toast.remove();
         }, 400);

@@ -1,16 +1,9 @@
-/**
- * ajax.js — Central AJAX utility for USeP VRS
- * Usage:
- *   VRS.ajax.post('api/accounts/store', formData).then(...)
- *   VRS.ajax.get('api/reports?type=daily').then(...)
- */
-
 window.VRS = window.VRS || {};
 
 VRS.ajax = (function () {
     'use strict';
 
-    /** Get the CSRF token from the meta tag. */
+    /** Get the CSRF token */
     function getCsrfToken() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute('content') : '';
@@ -21,15 +14,8 @@ VRS.ajax = (function () {
         const base = document.querySelector('meta[name="base-url"]');
         const baseUrl = base ? base.getAttribute('content') : '/';
         if (!path) return baseUrl;
-
-        // Already a full URL
         if (/^https?:\/\//i.test(path)) return path;
-
-        // Absolute path
         if (path.startsWith('/')) return window.location.origin + path;
-
-        // Relative path — route through index.php for compatibility
-        // (works with or without .htaccess mod_rewrite)
         if (!path.startsWith('index.php/') && path !== 'index.php') {
             path = 'index.php/' + path;
         }
@@ -68,7 +54,7 @@ VRS.ajax = (function () {
                 credentials: 'same-origin',
             });
 
-            /* ── Guard: ensure the response is actually JSON ── */
+            /* ── Guard ── */
             const contentType = response.headers.get('Content-Type') || '';
             if (!contentType.includes('application/json')) {
                 const text = await response.text();
@@ -114,7 +100,7 @@ VRS.ajax = (function () {
                 credentials: 'same-origin',
             });
 
-            /* ── Guard: ensure the response is actually JSON ── */
+            /* ── Guard ── */
             const contentType = response.headers.get('Content-Type') || '';
             if (!contentType.includes('application/json')) {
                 const text = await response.text();
@@ -149,17 +135,13 @@ VRS.ajax = (function () {
         try {
             const formData = new FormData(form);
             const action = form.getAttribute('data-ajax-url') || form.action;
-
-            /* ── Derive relative path from the action URL ── */
             const baseMeta = document.querySelector('meta[name="base-url"]');
             const baseUrl = baseMeta ? baseMeta.getAttribute('content') : '/';
             let path = action;
 
-            // Strip the full base URL first (covers absolute URLs)
             if (path.startsWith(baseUrl)) {
                 path = path.substring(baseUrl.length);
             } else {
-                // Fallback: strip origin, then strip the path-only portion of baseUrl
                 path = path.replace(window.location.origin, '');
                 try {
                     const basePath = new URL(baseUrl).pathname;
@@ -167,15 +149,12 @@ VRS.ajax = (function () {
                         path = path.substring(basePath.length);
                     }
                 } catch (_) {
-                    // baseUrl is already a relative path
                     if (path.startsWith(baseUrl)) {
                         path = path.substring(baseUrl.length);
                     }
                 }
             }
-            // Remove leading slashes to get a clean relative path
             path = path.replace(/^\/+/, '');
-
             const result = await post(path, formData);
 
             if (result.success) {

@@ -1,8 +1,3 @@
--- ═══════════════════════════════════════════════════════════════════
---  USeP Vehicle Reservation System — Full Database Schema + Seed Data
---  Engine: MySQL 8.0+  |  Charset: utf8mb4_unicode_ci
--- ═══════════════════════════════════════════════════════════════════
-
 CREATE DATABASE IF NOT EXISTS usep_vrs
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
@@ -12,7 +7,6 @@ USE usep_vrs;
 -- ── 1. Users ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
     user_id       INT UNSIGNED     NOT NULL AUTO_INCREMENT,
-    employee_id   VARCHAR(20)      NOT NULL,
     full_name     VARCHAR(100)     NOT NULL,
     email         VARCHAR(100)     NOT NULL,
     username      VARCHAR(50)      NOT NULL,
@@ -31,7 +25,6 @@ CREATE TABLE IF NOT EXISTS users (
                                             ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (user_id),
-    UNIQUE KEY uq_employee_id (employee_id),
     UNIQUE KEY uq_email       (email),
     UNIQUE KEY uq_username    (username),
     INDEX idx_role            (role),
@@ -130,14 +123,11 @@ CREATE TABLE IF NOT EXISTS approvals (
 CREATE TABLE IF NOT EXISTS drivers (
     driver_id      INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     user_id        INT UNSIGNED  NOT NULL,
-    license_no     VARCHAR(30)   NOT NULL,
-    license_expiry DATE          NOT NULL,
     is_available   TINYINT(1)    NOT NULL DEFAULT 1,
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (driver_id),
     UNIQUE KEY uq_user_id    (user_id),
-    UNIQUE KEY uq_license_no (license_no),
 
     CONSTRAINT fk_drv_user FOREIGN KEY (user_id)
         REFERENCES users (user_id) ON DELETE CASCADE
@@ -149,6 +139,7 @@ CREATE TABLE IF NOT EXISTS dispatch_logs (
     reservation_id    INT UNSIGNED  NOT NULL,
     driver_id         INT UNSIGNED  NOT NULL,
     vehicle_id        INT UNSIGNED  NOT NULL,
+    actual_passengers TINYINT UNSIGNED NULL,
     start_mileage     DECIMAL(10,2) NULL     DEFAULT 0.00,
     end_mileage       DECIMAL(10,2) NULL,
     fuel_consumed     DECIMAL(8,2)  NULL,
@@ -319,46 +310,39 @@ BEGIN
 END//
 DELIMITER ;
 
-
--- ═══════════════════════════════════════════════════════════════════
---  SEED DATA — Default accounts and sample fleet
--- ═══════════════════════════════════════════════════════════════════
-
+--  Default accounts and sample fleet
 -- Passwords are bcrypt hashes — regenerate with: php -r "echo password_hash('pw', PASSWORD_BCRYPT);"
 
 INSERT INTO users
-    (employee_id, full_name, email, username, password_hash, role, department, contact_no)
+    (full_name, email, username, password_hash, role, department, contact_no)
 VALUES
 -- Administrator  (password: admin@USeP2026)
-('EMP-0001', 'System Administrator', 'admin@usep.edu.ph',
+('System Administrator', 'admin@usep.edu.ph',
  'admin',
  '$2y$10$1HUxPEzHlzg/vFU3xSfqAOjZdA.irdReUT8fHcMdr8W.8AbhJOj9u',
  'admin', 'Administrative Services Division', '082-227-8192'),
 
 -- Staff  (password: password123)
-('EMP-0002', 'Maria Clara Reyes', 'mclara.reyes@usep.edu.ph',
- 'staff1',
+('Maria Clara Reyes', 'mclara.reyes@usep.edu.ph',
+ 'staff',
  '$2y$10$YarHdN2Q5BHpsXhTK2ae/.mceB.hPAV3Q8k9eEZ7hkjvIQ6jIrsZW',
  'staff', 'Administrative Services Division', '09171234567'),
 
--- Staff  (password: password123)
-('EMP-0003', 'Jose Santos Jr.', 'jose.santos@usep.edu.ph',
- 'staff2',
- '$2y$10$YarHdN2Q5BHpsXhTK2ae/.mceB.hPAV3Q8k9eEZ7hkjvIQ6jIrsZW',
- 'staff', 'College of Engineering and Technology', '09281234567'),
-
 -- Requester  (password: password123)
-('EMP-0004', 'Ana Marie Gonzales', 'ana.gonzales@usep.edu.ph',
- 'msantos',
+('Ana Marie Gonzales', 'ana.gonzales@usep.edu.ph',
+ 'requester',
  '$2y$10$YarHdN2Q5BHpsXhTK2ae/.mceB.hPAV3Q8k9eEZ7hkjvIQ6jIrsZW',
  'requester', 'Registrar Office', '09391234567'),
 
 -- Driver  (password: password123)
-('EMP-0005', 'Juan Dela Cruz', 'juan.delacruz@usep.edu.ph',
- 'jreyes',
+('Juan Dela Cruz', 'juan.delacruz@usep.edu.ph',
+ 'driver',
  '$2y$10$YarHdN2Q5BHpsXhTK2ae/.mceB.hPAV3Q8k9eEZ7hkjvIQ6jIrsZW',
  'driver', 'Motorpool', '09501234567');
 
+INSERT INTO drivers (user_id, is_available)
+    SELECT user_id, 1
+    FROM   users WHERE username = 'driver';
 
 -- Sample vehicle fleet
 INSERT INTO vehicles (plate_number, make_model, vehicle_type, capacity, year, color, status) VALUES
@@ -367,9 +351,3 @@ INSERT INTO vehicles (plate_number, make_model, vehicle_type, capacity, year, co
 ('USeP-0003', 'Mitsubishi L300 FB',      'Van',     14, 2020, 'White',   'available'),
 ('USeP-0004', 'Toyota Fortuner',         'SUV',      7, 2023, 'Black',   'available'),
 ('USeP-0005', 'Toyota Innova',           'Van',      7, 2022, 'Pearl',   'maintenance');
-
-
--- Driver profile record for EMP-0005
-INSERT INTO drivers (user_id, license_no, license_expiry, is_available)
-    SELECT user_id, 'N05-12-345678', '2028-06-30', 1
-    FROM   users WHERE username = 'jreyes';

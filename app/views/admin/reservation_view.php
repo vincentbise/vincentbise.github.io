@@ -1,8 +1,11 @@
 <?php
+/** @var array $reservation */
+/** @var array $approvals */
+/** @var array|null $dispatchLog */
+/** @var string|null $flash */
 $pageTitle = 'Reservation Detail – ' . htmlspecialchars($reservation['reference_no']);
 include VIEW_PATH . '/layouts/header.php';
 ?>
-
 <div class="wrap">
     <main class="content">
 
@@ -22,17 +25,32 @@ include VIEW_PATH . '/layouts/header.php';
         <section class="panel active detail-grid">
             <div class="detail-section">
                 <h3>Request Details</h3>
+                <div class="detail-meta">
+                    <div class="detail-meta-item">
+                        <div class="detail-meta-label">Status</div>
+                        <div class="detail-meta-value">
+                            <span class="badge badge-<?= $reservation['status'] ?>">
+                                <?= ucwords(str_replace('_',' ',$reservation['status'])) ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-meta-item">
+                        <div class="detail-meta-label">Passengers</div>
+                        <div class="detail-meta-value"><?= (int)$reservation['passengers'] ?></div>
+                    </div>
+                    <div class="detail-meta-item">
+                        <div class="detail-meta-label">Trip Dates</div>
+                        <div class="detail-meta-value">
+                            <?= htmlspecialchars($reservation['departure_date']) ?> → <?= htmlspecialchars($reservation['return_date']) ?>
+                        </div>
+                    </div>
+                </div>
                 <dl class="detail-list">
                     <div><dt>Reference No.</dt><dd><?= htmlspecialchars($reservation['reference_no']) ?></dd></div>
-                    <div><dt>Status</dt>
-                         <dd><span class="badge badge-<?= $reservation['status'] ?>">
-                             <?= ucwords(str_replace('_',' ',$reservation['status'])) ?>
-                         </span></dd></div>
                     <div><dt>Requester</dt>   <dd><?= htmlspecialchars($reservation['requester_name']) ?></dd></div>
                     <div><dt>Department</dt>  <dd><?= htmlspecialchars($reservation['department'] ?? '—') ?></dd></div>
                     <div><dt>Contact</dt>     <dd><?= htmlspecialchars($reservation['contact_no']  ?? '—') ?></dd></div>
                     <div><dt>Destination</dt> <dd><?= htmlspecialchars($reservation['destination']) ?></dd></div>
-                    <div><dt>Passengers</dt>  <dd><?= (int)$reservation['passengers'] ?></dd></div>
                     <div><dt>Purpose</dt>     <dd><?= nl2br(htmlspecialchars($reservation['purpose'])) ?></dd></div>
                     <?php if (!empty($reservation['requester_remarks'])): ?>
                     <div class="full-detail"><dt>Requester Justification</dt><dd><?= nl2br(htmlspecialchars($reservation['requester_remarks'])) ?></dd></div>
@@ -48,7 +66,7 @@ include VIEW_PATH . '/layouts/header.php';
                 </dl>
             </div>
 
-            <!-- Dispatch Info (if dispatch log exists) -->
+            <!-- Dispatch Info -->
             <?php if (!empty($dispatchLog)): ?>
             <div class="detail-section">
                 <h3>Dispatch Information</h3>

@@ -1,5 +1,4 @@
 <?php
-// VehicleController
 class VehicleController extends Controller {
 
     private Vehicle $model;
@@ -141,12 +140,11 @@ class VehicleController extends Controller {
         $this->redirect('admin/vehicles');
     }
 
-    /** API: Return available vehicles filtered by type and capacity (JSON). */
     public function availableApi(): void {
         $type     = $_GET['type']     ?? null;
         $capacity = max(1, (int)($_GET['capacity'] ?? 1));
 
-        $vehicles = $this->model->availableByFilter($type, $capacity);
+        $vehicles = $this->model->requestableByFilter($type, $capacity);
 
         $result = array_map(function ($v) {
             return [
@@ -162,5 +160,27 @@ class VehicleController extends Controller {
         }, $vehicles);
 
         $this->json(['success' => true, 'vehicles' => $result]);
+    }
+
+    public function unavailableWindowsApi(): void {
+        $vehicleId = (int)($_GET['vehicle_id'] ?? 0);
+        if ($vehicleId < 1) {
+            $this->json(['success' => false, 'message' => 'Invalid vehicle.'], 422);
+        }
+
+        $reservationModel = new Reservation();
+        $windows = $reservationModel->dispatchedWindowsForVehicle($vehicleId);
+
+        $result = array_map(function ($w) {
+            return [
+                'reference_no'   => $w['reference_no'],
+                'departure_date' => $w['departure_date'],
+                'departure_time' => $w['departure_time'],
+                'return_date'    => $w['return_date'],
+                'return_time'    => $w['return_time'],
+            ];
+        }, $windows);
+
+        $this->json(['success' => true, 'windows' => $result]);
     }
 }

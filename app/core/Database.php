@@ -1,5 +1,4 @@
 <?php
-// Database Singleton (PDO)
 class Database {
     private static ?PDO $instance = null;
 
@@ -30,8 +29,6 @@ class Database {
             file_put_contents(LOG_PATH, $line, FILE_APPEND | LOCK_EX);
         }
     }
-
-
     private function __construct() {}
     private function __clone()     {}
 }

@@ -1,5 +1,4 @@
 <?php
-
 $pageTitle = $pageTitle ?? APP_NAME;
 ?>
 <!DOCTYPE html>

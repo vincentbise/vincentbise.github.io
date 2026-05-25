@@ -1,5 +1,4 @@
 <?php
-// Base Model
 abstract class Model {
     protected PDO $db;
 
@@ -9,8 +8,6 @@ abstract class Model {
         $stmt = $this->db->prepare('SET @app_user_id = ?');
         $stmt->execute([$userId]);
     }
-
-
 
     /** Execute a prepared statement and return all rows. */
     protected function query(string $sql, array $params = []): array {

@@ -22,9 +22,18 @@ include VIEW_PATH . '/layouts/header.php';
 
             <div class="panel-header">
                 <h3>All Accounts</h3>
-                <input type="text" id="account-search"
-                       placeholder="Search name, role, department…"
-                       class="search-input"/>
+                <div class="filter-group">
+                    <input type="text" id="account-search"
+                           placeholder="Search name, role, department…"
+                           class="search-input"/>
+                    <select id="role-filter" class="filter-select">
+                        <option value="all">All Roles</option>
+                        <option value="admin">Administrator</option>
+                        <option value="staff">Staff</option>
+                        <option value="requester">Requester</option>
+                        <option value="driver">Driver</option>
+                    </select>
+                </div>
             </div>
 
             <div class="table-wrap">
@@ -45,7 +54,7 @@ include VIEW_PATH . '/layouts/header.php';
                         <tr><td colspan="7" class="empty-row">No accounts found.</td></tr>
                     <?php else: ?>
                     <?php foreach ($users as $u): ?>
-                        <tr id="user-row-<?= (int)$u['user_id'] ?>">
+                        <tr id="user-row-<?= (int)$u['user_id'] ?>" data-role="<?= $u['role'] ?>">
                             <td><?= (int)$u['user_id'] ?></td>
                             <td><?= htmlspecialchars($u['full_name']) ?></td>
                             <td>
@@ -89,12 +98,24 @@ include VIEW_PATH . '/layouts/header.php';
 <?php include VIEW_PATH . '/layouts/footer.php'; ?>
 <script>
 
-    document.getElementById('account-search').addEventListener('input', function () {
-        const q = this.value.toLowerCase();
+    const searchInput = document.getElementById('account-search');
+    const roleFilter = document.getElementById('role-filter');
+
+    function applyFilters() {
+        const q = (searchInput ? searchInput.value : '').toLowerCase();
+        const role = roleFilter ? roleFilter.value : 'all';
+
         document.querySelectorAll('#accounts-table tbody tr').forEach(row => {
-            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            if (row.classList.contains('empty-row')) return;
+            const matchesText = row.textContent.toLowerCase().includes(q);
+            const rowRole = row.getAttribute('data-role') || '';
+            const matchesRole = role === 'all' || rowRole === role;
+            row.style.display = (matchesText && matchesRole) ? '' : 'none';
         });
-    });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (roleFilter) roleFilter.addEventListener('change', applyFilters);
 
 
     document.querySelectorAll('.ajax-toggle-form').forEach(form => {

@@ -2,7 +2,6 @@
 $pageTitle = 'Driver Dashboard';
 include VIEW_PATH . '/layouts/header.php';
 ?>
-
 <div class="wrap">
     <main class="content">
 
@@ -30,8 +29,16 @@ include VIEW_PATH . '/layouts/header.php';
                 </div>
                 <div class="trip-details">
                     <div><strong>Destination:</strong> <?= htmlspecialchars($t['destination']) ?></div>
-                    <div><strong>Departure:</strong> <?= htmlspecialchars($t['departure_date']) ?></div>
+                    <div><strong>Departure:</strong>
+                        <?= date('M d, Y', strtotime($t['departure_date'])) ?>
+                        <?= $t['departure_time'] ? date('h:i A', strtotime($t['departure_time'])) : '' ?>
+                    </div>
+                    <div><strong>Return:</strong>
+                        <?= date('M d, Y', strtotime($t['return_date'])) ?>
+                        <?= $t['return_time'] ? date('h:i A', strtotime($t['return_time'])) : '' ?>
+                    </div>
                     <div><strong>Vehicle:</strong> <?= htmlspecialchars($t['make_model'] ?? '—') ?> (<?= htmlspecialchars($t['plate_number'] ?? '—') ?>)</div>
+                    <div><strong>Passengers:</strong> <?= (int)$t['passengers'] ?></div>
                 </div>
 
                 <?php if ($t['status'] === 'approved'): ?>
@@ -40,6 +47,12 @@ include VIEW_PATH . '/layouts/header.php';
                           class="ajax-driver-form">
                         <?= Controller::csrfField() ?>
                         <input type="hidden" name="reservation_id" value="<?= (int)$t['reservation_id'] ?>"/>
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label>Passengers Present <span class="required">*</span></label>
+                            <input type="number" name="actual_passengers" min="1"
+                                   max="<?= (int)$t['passengers'] ?>" required
+                                   placeholder="Enter actual passenger count"/>
+                        </div>
                         <button type="submit" class="btn-primary btn-trip-action">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                             Start Trip
@@ -78,6 +91,15 @@ include VIEW_PATH . '/layouts/header.php';
             e.preventDefault();
             const btn = form.querySelector('button[type="submit"]');
             const isStart = btn.textContent.trim().includes('Start');
+            if (isStart) {
+                const paxInput = form.querySelector('input[name="actual_passengers"]');
+                const paxVal = paxInput ? parseInt(paxInput.value || '0', 10) : 0;
+                if (!paxVal || paxVal < 1) {
+                    VRS.notify.warning('Please enter the passenger count before starting the trip.');
+                    if (paxInput) paxInput.focus();
+                    return;
+                }
+            }
             const msg = isStart
                 ? 'Are you sure you want to start this trip?'
                 : 'Are you sure you want to mark this trip as complete?';

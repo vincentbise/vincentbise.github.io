@@ -1,5 +1,5 @@
 <?php
-// ─── Application Configuration ─────────────────────────────────────────────
+// ─── App Config ───────────────────────────────────────────────────────────
 define('APP_NAME',    'USeP Vehicle Reservation System');
 define('APP_VERSION', '1.0.0');
 
@@ -13,7 +13,7 @@ define('SESSION_NAME','usep_vrs_session');
 
 date_default_timezone_set(TIMEZONE);
 
-// ─── Path Helpers ──────────────────────────────────────────────────────────
+// ─── Path Helpers ─────────────────────────────────────────────────────────
 define('ROOT_PATH',   dirname(__DIR__));
 define('APP_PATH',    ROOT_PATH . '/app');
 define('VIEW_PATH',   APP_PATH  . '/views');

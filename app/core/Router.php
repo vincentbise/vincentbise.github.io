@@ -1,5 +1,4 @@
 <?php
-// Router
 class Router {
     private array $routes = [
 
@@ -27,6 +26,8 @@ class Router {
         'admin/reservations/view'  => ['ReservationController', 'adminView'],
         'admin/reservations/assign'=> ['ReservationController', 'assign'],
         'admin/reports'            => ['ReportController',      'index'],
+        'account/edit'             => ['UserController',        'editProfile'],
+        'account/update'           => ['UserController',        'updateProfile'],
 
 
         'requester/dashboard'      => ['DashboardController',   'requesterDashboard'],
@@ -53,6 +54,8 @@ class Router {
         'api/vehicles/store'       => ['VehicleController',     'store'],
         'api/vehicles/update'      => ['VehicleController',     'update'],
         'api/vehicles/available'   => ['VehicleController',     'availableApi'],
+        'api/vehicles/unavailable' => ['VehicleController',     'unavailableWindowsApi'],
+        'api/account/update'       => ['UserController',        'updateProfile'],
         'api/reservations/store'   => ['ReservationController', 'store'],
         'api/reservations/cancel'  => ['ReservationController', 'cancel'],
         'api/reservations/assign'  => ['ReservationController', 'assign'],
@@ -72,7 +75,6 @@ class Router {
         $url = parse_url($url, PHP_URL_PATH);
         $url = trim($url ?? '', '/');
 
-        // Support index.php/route style URLs (when .htaccess rewrite is unavailable)
         if (str_starts_with($url, 'index.php/')) {
             $url = substr($url, strlen('index.php/'));
         } elseif ($url === 'index.php') {

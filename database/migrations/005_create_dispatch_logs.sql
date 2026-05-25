@@ -2,14 +2,11 @@
 CREATE TABLE IF NOT EXISTS drivers (
     driver_id      INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     user_id        INT UNSIGNED  NOT NULL,
-    license_no     VARCHAR(30)   NOT NULL,
-    license_expiry DATE          NOT NULL,
     is_available   TINYINT(1)    NOT NULL DEFAULT 1,
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (driver_id),
     UNIQUE KEY uq_user_id    (user_id),
-    UNIQUE KEY uq_license_no (license_no),
 
     CONSTRAINT fk_drv_user FOREIGN KEY (user_id)
         REFERENCES users (user_id) ON DELETE CASCADE

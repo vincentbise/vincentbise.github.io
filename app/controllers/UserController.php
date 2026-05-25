@@ -1,11 +1,12 @@
 <?php
-// UserController
 class UserController extends Controller {
 
     private User $model;
+    private Driver $driverModel;
 
     public function __construct() {
         $this->model = new User();
+        $this->driverModel = new Driver();
     }
 
     public function index(): void {
@@ -35,7 +36,6 @@ class UserController extends Controller {
             'contact_no'  => $this->postInput('contact_no'),
         ];
 
-
         foreach (['full_name','email','username','password'] as $f) {
             if (empty($data[$f])) {
                 if ($this->isAjax()) {
@@ -56,12 +56,23 @@ class UserController extends Controller {
             $this->redirect('admin/accounts/create');
         }
 
+        $userId = null;
+
         try {
-            $this->model->create($data);
+            $userId = $this->model->create($data);
+            if ($data['role'] === 'driver') {
+                $this->driverModel->createForUser($userId, true);
+            }
         } catch (\PDOException $e) {
+            if ($userId && $data['role'] === 'driver') {
+                $this->model->delete($userId);
+            }
             $msg = 'Failed to create account.';
             if (str_contains($e->getMessage(), 'Duplicate entry')) {
                 $msg = 'Email or username already exists.';
+            }
+            if ($data['role'] === 'driver') {
+                $msg = 'Failed to create driver profile.';
             }
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => $msg], 422);
@@ -101,10 +112,23 @@ class UserController extends Controller {
 
         try {
             $this->model->update($id, $data);
+
+            if ($data['role'] === 'driver') {
+                $driver = $this->driverModel->findByUserId($id);
+                $available = $driver ? (bool)$driver['is_available'] : true;
+                if ($driver) {
+                    $this->driverModel->updateByUserId($id, $available);
+                } else {
+                    $this->driverModel->createForUser($id, $available);
+                }
+            }
         } catch (\PDOException $e) {
             $msg = 'Failed to update account.';
             if (str_contains($e->getMessage(), 'Duplicate entry')) {
                 $msg = 'Email already exists.';
+            }
+            if ($data['role'] === 'driver') {
+                $msg = 'Failed to update driver profile.';
             }
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'message' => $msg], 422);
@@ -118,6 +142,64 @@ class UserController extends Controller {
         }
         $this->flash('success', 'Account updated successfully.');
         $this->redirect('admin/accounts');
+    }
+
+    public function editProfile(): void {
+        $this->requireRole('requester', 'staff', 'driver');
+
+        $id = (int)($_SESSION['user_id'] ?? 0);
+        $user = $this->model->findById($id);
+        if (!$user) { http_response_code(404); die('User not found.'); }
+
+        $this->view('account.edit', [
+            'user'  => $user,
+            'flash' => $this->getFlash('success'),
+            'error' => $this->getFlash('error'),
+        ]);
+    }
+
+    public function updateProfile(): void {
+        $this->requireRole('requester', 'staff', 'driver');
+        $this->verifyCsrf();
+
+        $id = (int)($_SESSION['user_id'] ?? 0);
+        $data = [
+            'full_name'  => $this->postInput('full_name'),
+            'email'      => $this->postInput('email'),
+            'department' => $this->postInput('department'),
+            'contact_no' => $this->postInput('contact_no'),
+            'password'   => $_POST['password'] ?? '',
+        ];
+
+        foreach (['full_name','email'] as $f) {
+            if (empty($data[$f])) {
+                if ($this->isAjax()) {
+                    $this->json(['success' => false, 'message' => 'Name and email are required.'], 422);
+                }
+                $this->flash('error', 'Name and email are required.');
+                $this->redirect('account/edit');
+            }
+        }
+
+        try {
+            $this->model->updateProfile($id, $data);
+        } catch (\PDOException $e) {
+            $msg = 'Failed to update profile.';
+            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                $msg = 'Email already exists.';
+            }
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'message' => $msg], 422);
+            }
+            $this->flash('error', $msg);
+            $this->redirect('account/edit');
+        }
+
+        if ($this->isAjax()) {
+            $this->json(['success' => true, 'message' => 'Profile updated successfully.']);
+        }
+        $this->flash('success', 'Profile updated successfully.');
+        $this->redirect('account/edit');
     }
 
     public function toggle(): void {

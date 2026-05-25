@@ -1,4 +1,5 @@
 <?php
+/** @var array $requests */
 $pageTitle = 'My Requests';
 include VIEW_PATH . '/layouts/header.php';
 ?>

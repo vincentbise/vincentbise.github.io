@@ -1,4 +1,7 @@
 <?php
+/** @var array $vehicleTypes */
+/** @var string|null $flash */
+/** @var string|null $error */
 $pageTitle = 'New Reservation';
 include VIEW_PATH . '/layouts/header.php';
 
@@ -43,7 +46,7 @@ $timeSlots = timeOptions();
                   id="reservation-form" novalidate>
                 <?= Controller::csrfField() ?>
 
-                <div class="form-grid">
+                <div class="form-grid request-grid">
 
                     <div class="form-group full-width">
                         <label for="purpose">Purpose / Reason for Travel <span class="required">*</span></label>
@@ -58,24 +61,18 @@ $timeSlots = timeOptions();
                                placeholder="e.g., USeP Obrero Campus, Tagum City" required/>
                     </div>
 
-                    <div class="form-group">
-                        <label for="passengers">Number of Passengers <span class="required">*</span></label>
-                        <input type="number" id="passengers" name="passengers"
-                               min="1" max="50" value="1" required/>
-                    </div>
-
-                    <div class="form-group full-width" id="occupancy-warning" style="display:none;">
-                        <div class="alert alert-warning" style="margin:0;">
-                            Occupancy is below 50%. Please add a justification below.
-                        </div>
-                    </div>
-
-                    <!-- Departure Date & Time -->
+                    <!-- Departure / Return Dates -->
                     <div class="form-group">
                         <label for="departure_date">Departure Date <span class="required">*</span></label>
                         <input type="date" id="departure_date" name="departure_date" required/>
                     </div>
 
+                    <div class="form-group">
+                        <label for="return_date">Return Date <span class="required">*</span></label>
+                        <input type="date" id="return_date" name="return_date" required/>
+                    </div>
+
+                    <!-- Departure / Return Times -->
                     <div class="form-group">
                         <label for="departure_time">Departure Time <span class="required">*</span></label>
                         <select id="departure_time" name="departure_time" required>
@@ -84,12 +81,6 @@ $timeSlots = timeOptions();
                             <option value="<?= $t['value'] ?>"><?= $t['label'] ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </div>
-
-                    <!-- Return Date & Time -->
-                    <div class="form-group">
-                        <label for="return_date">Return Date <span class="required">*</span></label>
-                        <input type="date" id="return_date" name="return_date" required/>
                     </div>
 
                     <div class="form-group">
@@ -102,6 +93,18 @@ $timeSlots = timeOptions();
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label for="passengers">Number of Passengers <span class="required">*</span></label>
+                        <input type="number" id="passengers" name="passengers"
+                               min="1" max="50" value="1" required/>
+                    </div>
+
+                    <div class="form-group full-width" id="occupancy-warning" style="display:none;">
+                        <div class="alert alert-warning" style="margin:0;">
+                            Occupancy is below 50%. Please add a justification below.
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="form-group full-width" id="occupancy-remarks-group" style="display:none;">
@@ -110,7 +113,7 @@ $timeSlots = timeOptions();
                               placeholder="Explain why the passenger count is below 50% of vehicle capacity..."></textarea>
                 </div>
 
-                <!-- Vehicle Selection Section (REQUIRED) -->
+                <!-- Vehicle Selection Section -->
                 <div class="vehicle-selection-section">
                     <h3 class="section-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -137,7 +140,7 @@ $timeSlots = timeOptions();
                         </div>
                     </div>
 
-                    <!-- Selected vehicle details card (appears when a vehicle is chosen) -->
+                    <!-- Selected vehicle details card -->
                     <div id="selected-vehicle-details-card" class="selected-vehicle-details-card" style="display:none;">
                         <h4 class="details-card-title">Vehicle Specifications</h4>
                         <div class="details-card-grid">
@@ -169,7 +172,7 @@ $timeSlots = timeOptions();
                     </div>
                 </div>
 
-                <div class="form-actions">
+                <div class="form-actions form-actions-right">
                     <a href="<?= BASE_URL ?>requester/my_requests" class="btn-outline">Cancel</a>
                     <button type="submit" class="btn-primary" id="submit-btn">Submit Request</button>
                 </div>

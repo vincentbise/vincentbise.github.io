@@ -1,5 +1,3 @@
-/* reports.js — Report page helpers (print, CSV export) */
-
 (function () {
     'use strict';
 

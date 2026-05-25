@@ -1,5 +1,3 @@
-/* dashboard.js — Live clock & UI helpers */
-
 (function () {
     'use strict';
 
