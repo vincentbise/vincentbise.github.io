@@ -16,7 +16,6 @@ include VIEW_PATH . '/layouts/header.php';
             <div class="alert alert-success"><?= htmlspecialchars($flash) ?></div>
         <?php endif; ?>
 
-
         <div class="filter-tabs" id="res-filter">
             <button class="filter-tab active" data-filter="all">All</button>
             <button class="filter-tab" data-filter="pending">Pending</button>
@@ -95,7 +94,6 @@ include VIEW_PATH . '/layouts/header.php';
             });
         });
     });
-
 
     document.getElementById('res-search').addEventListener('input', function () {
         const q = this.value.toLowerCase();

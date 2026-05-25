@@ -180,8 +180,7 @@ class Reservation extends Model {
 
     public function activeForDriver(int $driverId): array {
         return $this->query(
-            'SELECT r.*, v.make_model, v.plate_number,
-                    dl.start_mileage
+            'SELECT r.*, v.make_model, v.plate_number
              FROM   reservations r
              JOIN   dispatch_logs dl ON dl.reservation_id = r.reservation_id
              JOIN   vehicles v ON v.vehicle_id = r.vehicle_id

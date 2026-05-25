@@ -5,7 +5,6 @@
 $pageTitle = 'New Reservation';
 include VIEW_PATH . '/layouts/header.php';
 
-// Generate time options in 30-minute increments
 function timeOptions(): array {
     $options = [];
     for ($h = 5; $h <= 22; $h++) {
@@ -22,7 +21,6 @@ function timeOptions(): array {
 }
 $timeSlots = timeOptions();
 ?>
-
 <div class="wrap">
     <main class="content">
 
@@ -61,7 +59,6 @@ $timeSlots = timeOptions();
                                placeholder="e.g., USeP Obrero Campus, Tagum City" required/>
                     </div>
 
-                    <!-- Departure / Return Dates -->
                     <div class="form-group">
                         <label for="departure_date">Departure Date <span class="required">*</span></label>
                         <input type="date" id="departure_date" name="departure_date" required/>
@@ -72,7 +69,6 @@ $timeSlots = timeOptions();
                         <input type="date" id="return_date" name="return_date" required/>
                     </div>
 
-                    <!-- Departure / Return Times -->
                     <div class="form-group">
                         <label for="departure_time">Departure Time <span class="required">*</span></label>
                         <select id="departure_time" name="departure_time" required>
@@ -113,7 +109,6 @@ $timeSlots = timeOptions();
                               placeholder="Explain why the passenger count is below 50% of vehicle capacity..."></textarea>
                 </div>
 
-                <!-- Vehicle Selection Section -->
                 <div class="vehicle-selection-section">
                     <h3 class="section-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -140,7 +135,6 @@ $timeSlots = timeOptions();
                         </div>
                     </div>
 
-                    <!-- Selected vehicle details card -->
                     <div id="selected-vehicle-details-card" class="selected-vehicle-details-card" style="display:none;">
                         <h4 class="details-card-title">Vehicle Specifications</h4>
                         <div class="details-card-grid">

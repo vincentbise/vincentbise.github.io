@@ -3,7 +3,6 @@
 $pageTitle = 'My Requests';
 include VIEW_PATH . '/layouts/header.php';
 ?>
-
 <div class="wrap">
     <main class="content">
 

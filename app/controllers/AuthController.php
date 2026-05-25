@@ -7,7 +7,6 @@ class AuthController extends Controller {
         $this->userModel = new User();
     }
 
-    /** GET /auth/login — Show login page. */
     public function login(): void {
         if (!empty($_SESSION['user_id'])) {
             $this->redirectByRole($_SESSION['role']);
@@ -16,7 +15,6 @@ class AuthController extends Controller {
         $this->view('auth.login', ['error' => $error]);
     }
 
-    /** POST /auth/do_login — Process login form. */
     public function doLogin(): void {
         $this->verifyCsrf();
 
@@ -80,7 +78,6 @@ class AuthController extends Controller {
         $this->redirect($redirectUrl);
     }
 
-    /** GET /auth/logout — Clear session and redirect. */
     public function logout(): void {
         session_unset();
         session_destroy();

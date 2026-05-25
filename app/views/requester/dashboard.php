@@ -2,14 +2,11 @@
 /** @var array $requests */
 $pageTitle = 'My Dashboard';
 include VIEW_PATH . '/layouts/header.php';
-
-
 $total     = count($requests);
 $pending   = count(array_filter($requests, fn($r) => $r['status'] === 'pending'));
 $completed = count(array_filter($requests, fn($r) => $r['status'] === 'completed'));
 $rejected  = count(array_filter($requests, fn($r) => in_array($r['status'], ['rejected','cancelled'])));
 ?>
-
 <div class="wrap">
     <main class="content">
 

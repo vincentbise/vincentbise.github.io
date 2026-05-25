@@ -1,6 +1,6 @@
 <?php
 $user = $user ?? null;
-$pageTitle = 'Edit Account';
+$pageTitle = 'My Account';
 include VIEW_PATH . '/layouts/header.php';
 ?>
 
@@ -9,7 +9,7 @@ include VIEW_PATH . '/layouts/header.php';
 
         <section class="hero">
             <div>
-                <h1>Edit Account</h1>
+                <h1>My Account</h1>
                 <p>Update your personal information and contact details.</p>
             </div>
         </section>
@@ -65,6 +65,7 @@ include VIEW_PATH . '/layouts/header.php';
                 </div>
 
                 <div class="form-actions">
+                    <a href="javascript:history.back()" class="btn-outline">Cancel</a>
                     <button type="submit" class="btn-primary">Save Changes</button>
                 </div>
             </form>

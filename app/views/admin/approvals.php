@@ -4,7 +4,6 @@ include VIEW_PATH . '/layouts/header.php';
 $levelLabel = 'Staff Review';
 $levelDesc  = 'Approve or reject reservation requests.';
 ?>
-
 <div class="wrap">
     <main class="content">
 
@@ -137,7 +136,6 @@ $levelDesc  = 'Approve or reject reservation requests.';
                             card.style.transform = 'translateX(40px)';
                             setTimeout(() => card.remove(), 400);
                         }
-
 
                         setTimeout(() => {
                             const remaining = document.querySelectorAll('.approval-card');

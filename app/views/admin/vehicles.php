@@ -94,7 +94,6 @@ include VIEW_PATH . '/layouts/header.php';
         });
     });
 
-
     document.getElementById('vehicle-search').addEventListener('input', function () {
         const q = this.value.toLowerCase();
         document.querySelectorAll('#vehicles-table tbody tr').forEach(row => {

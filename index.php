@@ -1,8 +1,4 @@
 <?php
-// ════════════════════════════════════════════════════════════════
-//  USeP Vehicle Reservation System — Front Controller
-//  Entry point for all HTTP requests.
-// ════════════════════════════════════════════════════════════════
 
 require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/config/database.php';

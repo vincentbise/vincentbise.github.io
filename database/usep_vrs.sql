@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255)     NOT NULL,
     role          ENUM(
                     'admin',
-                                        'staff',
-                                        'requester',
+                    'staff',
+                    'requester',
                     'driver'
                   ) NOT NULL DEFAULT 'requester',
     department    VARCHAR(100)     NULL,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     return_time      TIME          NOT NULL,
     status           ENUM(
                        'pending',
-                                             'approved',
+                       'approved',
                        'dispatched',
                        'completed',
                        'rejected',
@@ -140,9 +140,6 @@ CREATE TABLE IF NOT EXISTS dispatch_logs (
     driver_id         INT UNSIGNED  NOT NULL,
     vehicle_id        INT UNSIGNED  NOT NULL,
     actual_passengers TINYINT UNSIGNED NULL,
-    start_mileage     DECIMAL(10,2) NULL     DEFAULT 0.00,
-    end_mileage       DECIMAL(10,2) NULL,
-    fuel_consumed     DECIMAL(8,2)  NULL,
     actual_departure  DATETIME      NULL,
     actual_return     DATETIME      NULL,
     trip_notes        TEXT          NULL,
@@ -310,9 +307,7 @@ BEGIN
 END//
 DELIMITER ;
 
---  Default accounts and sample fleet
--- Passwords are bcrypt hashes — regenerate with: php -r "echo password_hash('pw', PASSWORD_BCRYPT);"
-
+--  Default accounts and fleet
 INSERT INTO users
     (full_name, email, username, password_hash, role, department, contact_no)
 VALUES

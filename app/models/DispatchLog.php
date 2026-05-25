@@ -29,14 +29,13 @@ class DispatchLog extends Model {
     public function create(array $data): void {
         $this->execute(
             'INSERT INTO dispatch_logs
-             (reservation_id, driver_id, vehicle_id, actual_passengers, start_mileage, actual_departure)
-             VALUES (?,?,?,?,?,NOW())',
+             (reservation_id, driver_id, vehicle_id, actual_passengers, actual_departure)
+             VALUES (?,?,?,?,NOW())',
             [
                 $data['reservation_id'],
                 $data['driver_id'],
                 $data['vehicle_id'],
                 $data['actual_passengers'] ?? null,
-                $data['start_mileage'] ?? 0,
             ]
         );
     }
@@ -55,24 +54,22 @@ class DispatchLog extends Model {
         return (int)($row['n'] ?? 0) > 0;
     }
 
-    public function startTrip(int $reservationId, float $startMileage, ?int $actualPassengers = null): void {
+    public function startTrip(int $reservationId, ?int $actualPassengers = null): void {
         $this->execute(
             'UPDATE dispatch_logs
-             SET actual_passengers=?, start_mileage=?, actual_departure=NOW()
+             SET actual_passengers=?, actual_departure=NOW()
              WHERE reservation_id=?',
-            [$actualPassengers, $startMileage, $reservationId]
+            [$actualPassengers, $reservationId]
         );
     }
 
     public function complete(int $reservationId, array $data): void {
         $this->execute(
             'UPDATE dispatch_logs
-             SET end_mileage=?, fuel_consumed=?, actual_return=NOW(), trip_notes=?
+             SET actual_return=NOW(), trip_notes=?
              WHERE reservation_id=?',
             [
-                $data['end_mileage'],
-                $data['fuel_consumed'] ?? null,
-                $data['trip_notes']    ?? null,
+                $data['trip_notes'] ?? null,
                 $reservationId,
             ]
         );

@@ -21,7 +21,6 @@ class DriverController extends Controller {
         $this->view('driver.my_trips', ['driver' => $driver, 'trips' => $trips]);
     }
 
-    /** Driver marks themselves as dispatched (trip started). */
     public function dispatch(): void {
         $this->requireRole('driver');
         $this->verifyCsrf();
@@ -89,14 +88,13 @@ class DriverController extends Controller {
 
         $existingLog = $this->logModel->findByReservation($reservationId);
         if ($existingLog) {
-            $this->logModel->startTrip($reservationId, 0, $actualPassengers);
+            $this->logModel->startTrip($reservationId, $actualPassengers);
         } else {
             $this->logModel->create([
-                'reservation_id' => $reservationId,
-                'driver_id'      => (int)$driver['driver_id'],
-                'vehicle_id'     => (int)$reservation['vehicle_id'],
+                'reservation_id'    => $reservationId,
+                'driver_id'         => (int)$driver['driver_id'],
+                'vehicle_id'        => (int)$reservation['vehicle_id'],
                 'actual_passengers' => $actualPassengers,
-                'start_mileage'  => 0,
             ]);
         }
 
@@ -114,7 +112,6 @@ class DriverController extends Controller {
         $this->redirect('driver/dashboard');
     }
 
-    /** Driver marks trip as complete. */
     public function complete(): void {
         $this->requireRole('driver');
         $this->verifyCsrf();
@@ -122,9 +119,7 @@ class DriverController extends Controller {
         $reservationId = (int)($_POST['reservation_id'] ?? 0);
 
         $this->logModel->complete($reservationId, [
-            'end_mileage'   => null,
-            'fuel_consumed' => null,
-            'trip_notes'    => trim($_POST['trip_notes'] ?? ''),
+            'trip_notes' => trim($_POST['trip_notes'] ?? ''),
         ]);
 
         $reservation = $this->reservationModel->findById($reservationId);

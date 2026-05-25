@@ -59,6 +59,7 @@ class ReportController extends Controller {
              FROM   drivers d
              JOIN   users u ON u.user_id = d.user_id
              LEFT JOIN dispatch_logs dl ON dl.driver_id = d.driver_id
+                   AND dl.actual_return IS NOT NULL
              GROUP  BY d.driver_id
              ORDER  BY trips DESC'
         );

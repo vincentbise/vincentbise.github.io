@@ -23,7 +23,6 @@ $currentLabel = $types[$currentType] ?? 'Report';
             </div>
         </section>
 
-        <!-- Report type selector -->
         <section class="panel active">
             <div class="report-grid">
                 <?php foreach ($types as $key => $label): ?>
@@ -35,8 +34,7 @@ $currentLabel = $types[$currentType] ?? 'Report';
                 <?php endforeach; ?>
             </div>
         </section>
-
-        <!-- Report Output -->
+        
         <section class="panel active">
             <div class="panel-header">
                 <h3><?= $currentLabel ?></h3>

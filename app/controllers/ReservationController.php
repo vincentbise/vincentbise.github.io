@@ -40,7 +40,6 @@ class ReservationController extends Controller {
         ]);
     }
 
-    /** Assign a vehicle to an approved reservation (Admin). Driver is auto-resolved from fleet management. */
     public function assign(): void {
         $this->requireRole('admin');
         $this->verifyCsrf();
@@ -92,7 +91,6 @@ class ReservationController extends Controller {
             'reservation_id' => $id,
             'driver_id'      => $driverId,
             'vehicle_id'     => $vehicleId,
-            'start_mileage'  => 0,
         ]);
 
         $this->driverModel->setAvailability($driverId, false);
@@ -107,8 +105,6 @@ class ReservationController extends Controller {
         $this->flash('success', 'Vehicle and driver assigned successfully.');
         $this->redirect("admin/reservations/view?id={$id}");
     }
-
-
 
     public function pendingApprovals(): void {
         $this->requireRole('admin', 'staff');
@@ -211,7 +207,6 @@ class ReservationController extends Controller {
                             'reservation_id' => $id,
                             'driver_id'      => $driverId,
                             'vehicle_id'     => (int)$reservation['vehicle_id'],
-                            'start_mileage'  => 0,
                         ]);
                     }
                 }

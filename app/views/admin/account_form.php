@@ -4,7 +4,6 @@ $isEdit    = !empty($user);
 $pageTitle = $isEdit ? 'Edit Account' : 'Add Account';
 include VIEW_PATH . '/layouts/header.php';
 ?>
-
 <div class="wrap">
     <main class="content">
 

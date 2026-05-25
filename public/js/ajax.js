@@ -3,13 +3,11 @@ window.VRS = window.VRS || {};
 VRS.ajax = (function () {
     'use strict';
 
-    /** Get the CSRF token */
     function getCsrfToken() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute('content') : '';
     }
 
-    /** Build the full URL relative to BASE_URL, routing through index.php. */
     function buildUrl(path) {
         const base = document.querySelector('meta[name="base-url"]');
         const baseUrl = base ? base.getAttribute('content') : '/';

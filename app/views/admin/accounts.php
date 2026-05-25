@@ -2,7 +2,6 @@
 $pageTitle = 'Manage Accounts';
 include VIEW_PATH . '/layouts/header.php';
 ?>
-
 <div class="wrap">
     <main class="content">
 
@@ -27,7 +26,7 @@ include VIEW_PATH . '/layouts/header.php';
                            placeholder="Search name, role, department…"
                            class="search-input"/>
                     <select id="role-filter" class="filter-select">
-                        <option value="all">All Roles</option>
+                        <option value="all">— Select Role —</option>
                         <option value="admin">Administrator</option>
                         <option value="staff">Staff</option>
                         <option value="requester">Requester</option>

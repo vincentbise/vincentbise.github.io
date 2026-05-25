@@ -21,7 +21,6 @@ include VIEW_PATH . '/layouts/header.php';
             <div class="alert alert-success"><?= htmlspecialchars($flash) ?></div>
         <?php endif; ?>
 
-        <!-- Details Card -->
         <section class="panel active detail-grid">
             <div class="detail-section">
                 <h3>Request Details</h3>
@@ -66,7 +65,6 @@ include VIEW_PATH . '/layouts/header.php';
                 </dl>
             </div>
 
-            <!-- Dispatch Info -->
             <?php if (!empty($dispatchLog)): ?>
             <div class="detail-section">
                 <h3>Dispatch Information</h3>
@@ -95,7 +93,6 @@ include VIEW_PATH . '/layouts/header.php';
             <?php endif; ?>
         </section>
 
-        <!-- Approval History -->
         <?php if (!empty($approvals)): ?>
         <section class="panel active">
             <h3>Approval History</h3>

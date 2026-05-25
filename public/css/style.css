@@ -1,7 +1,4 @@
-/* Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-/* Custom Properties */
 :root {
     --brand: #800000;
     --brand-dark: #5c0000;
@@ -26,7 +23,6 @@
     --transition: .2s ease;
 }
 
-/* Reset */
 *,
 *::before,
 *::after {
@@ -70,7 +66,6 @@ textarea {
     font-family: inherit;
 }
 
-/* Header */
 .site-header {
     background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
     height: 70px;
@@ -172,7 +167,6 @@ textarea {
     transform: scale(.97);
 }
 
-/* Sidebar */
 .side {
     position: fixed;
     top: 70px;
@@ -231,7 +225,6 @@ a.nav-btn.active {
     color: var(--danger);
 }
 
-/* Main Layout */
 .wrap {
     margin-right: 230px;
     padding: 24px;
@@ -251,7 +244,6 @@ a.nav-btn.active {
     width: 100%;
 }
 
-/* Hero Banner */
 .hero {
     background: linear-gradient(120deg, var(--brand) 0%, var(--brand-dark) 100%);
     background-size: 200% 200%;
@@ -359,7 +351,6 @@ a.nav-btn.active {
     max-width: 520px;
 }
 
-/* Stats Grid */
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -422,7 +413,6 @@ a.nav-btn.active {
     color: var(--brand);
 }
 
-/* Panels */
 .panel {
     background: var(--surface);
     border-radius: var(--radius);
@@ -456,19 +446,21 @@ a.nav-btn.active {
     font-weight: 700;
 }
 
-/* Buttons */
 .btn-primary {
     background: var(--brand);
     color: #fff;
-    border: none;
+    border: 2px solid transparent;
     border-radius: var(--radius-sm);
-    padding: 10px 22px;
+    padding: 8px 22px;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     transition: background var(--transition), transform .1s;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     text-decoration: none;
+    line-height: 1.5;
+    box-sizing: border-box;
 }
 
 .btn-primary:hover {
@@ -514,13 +506,16 @@ a.nav-btn.active {
     color: var(--brand);
     border: 2px solid var(--brand);
     border-radius: var(--radius-sm);
-    padding: 9px 20px;
+    padding: 8px 20px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all var(--transition);
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     text-decoration: none;
+    line-height: 1.5;
+    box-sizing: border-box;
 }
 
 .btn-outline:hover {
@@ -581,13 +576,17 @@ a.nav-btn.active {
 .btn-success {
     background: var(--success);
     color: #fff;
-    border: none;
+    border: 2px solid transparent;
     border-radius: var(--radius-sm);
-    padding: 10px 22px;
+    padding: 8px 22px;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     transition: background var(--transition);
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.5;
+    box-sizing: border-box;
 }
 
 .btn-success:hover {
@@ -631,7 +630,6 @@ a.nav-btn.active {
     background: #15803d;
 }
 
-/* Search Input */
 .search-input {
     padding: 8px 14px;
     border: 2px solid var(--border);
@@ -650,7 +648,6 @@ a.nav-btn.active {
     background: #fff;
 }
 
-/* Forms */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -771,7 +768,6 @@ a.nav-btn.active {
     color: var(--danger);
 }
 
-/* Alerts */
 .alert {
     border-radius: var(--radius-sm);
     padding: 12px 16px;
@@ -792,7 +788,6 @@ a.nav-btn.active {
     border-color: #fecaca;
 }
 
-/* Status Badges */
 .badge {
     display: inline-block;
     padding: 3px 10px;
@@ -863,7 +858,6 @@ a.nav-btn.active {
     border: 1px solid #e2e8f0;
 }
 
-/* Role Tags */
 .role-tag {
     display: inline-block;
     padding: 3px 10px;
@@ -897,7 +891,6 @@ a.nav-btn.active {
     border: 1px solid #fed7aa;
 }
 
-/* Filter Tabs */
 .filter-tabs {
     display: flex;
     gap: 6px;
@@ -931,7 +924,6 @@ a.nav-btn.active {
     box-shadow: var(--shadow-sm);
 }
 
-/* Report Grid */
 .report-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -966,7 +958,6 @@ a.nav-btn.active {
     color: var(--brand);
 }
 
-/* Date Filter */
 .date-filter {
     display: flex;
     gap: 8px;
@@ -987,7 +978,6 @@ a.nav-btn.active {
     border-color: var(--brand);
 }
 
-/* Detail Grid */
 .detail-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -1068,7 +1058,6 @@ a.nav-btn.active {
     grid-column: 1 / -1;
 }
 
-/* Approval Cards */
 .approval-card {
     border-left: 4px solid var(--gold);
     transition: opacity 0.4s ease, transform 0.4s ease;
@@ -1094,7 +1083,6 @@ a.nav-btn.active {
     border-radius: var(--radius-sm);
 }
 
-/* Decision Form */
 .decision-form-block {
     border-top: 1px solid var(--border);
     padding-top: 14px;
@@ -1130,7 +1118,6 @@ a.nav-btn.active {
     box-shadow: var(--shadow-sm);
 }
 
-/* Utilities */
 .empty-row {
     text-align: center;
     color: var(--muted);
@@ -1185,7 +1172,6 @@ a.nav-btn.active {
     white-space: nowrap;
 }
 
-/* Site Footer */
 .site-footer {
     background: var(--brand-dark);
     color: #ffe0e0;
@@ -1193,8 +1179,6 @@ a.nav-btn.active {
     padding: 14px;
     font-size: 12px;
 }
-
-/* Vehicle Selection Section — Reservation Form */
 
 .form-panel-wide {
     max-width: 100%;
@@ -1250,7 +1234,6 @@ a.nav-btn.active {
     margin-bottom: 16px;
 }
 
-/* Vehicle Selection Details Card */
 .selected-vehicle-details-card {
     background: var(--soft);
     border: 2px solid var(--border);
@@ -1297,7 +1280,6 @@ a.nav-btn.active {
     font-weight: 700;
 }
 
-/* Shake animation for validation */
 @keyframes highlightShake {
 
     0%,
@@ -1331,8 +1313,6 @@ a.nav-btn.active {
     margin: -16px;
     margin-bottom: 0;
 }
-
-/* Admin — Driver Info Display */
 
 .driver-info-display {
     margin-bottom: 16px;
@@ -1382,8 +1362,6 @@ a.nav-btn.active {
     margin-top: 1px;
 }
 
-/* Driver — Trip Action Buttons (Start / Complete) */
-
 .btn-trip-action {
     display: inline-flex;
     align-items: center;
@@ -1408,8 +1386,6 @@ a.nav-btn.active {
 .btn-trip-action:active {
     transform: scale(0.98);
 }
-
-/* Responsive tweaks for new components */
 
 @media (max-width: 640px) {
     .vehicle-filter-row {

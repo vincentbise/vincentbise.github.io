@@ -17,18 +17,18 @@ $role = $_SESSION['role'] ?? '';
 
     <?php elseif ($role === 'staff'): ?>
         <a class="nav-btn" href="<?= BASE_URL ?>approvals">Approvals</a>
-        <a class="nav-btn" href="<?= BASE_URL ?>account/edit">Edit Account</a>
+        <a class="nav-btn" href="<?= BASE_URL ?>account/edit">My Account</a>
 
     <?php elseif ($role === 'requester'): ?>
         <a class="nav-btn" href="<?= BASE_URL ?>requester/dashboard">Dashboard</a>
         <a class="nav-btn" href="<?= BASE_URL ?>requester/new">New Request</a>
         <a class="nav-btn" href="<?= BASE_URL ?>requester/my_requests">My Requests</a>
-        <a class="nav-btn" href="<?= BASE_URL ?>account/edit">Edit Account</a>
+        <a class="nav-btn" href="<?= BASE_URL ?>account/edit">My Account</a>
 
     <?php elseif ($role === 'driver'): ?>
         <a class="nav-btn" href="<?= BASE_URL ?>driver/dashboard">My Trips</a>
         <a class="nav-btn" href="<?= BASE_URL ?>driver/trips">Trip History</a>
-        <a class="nav-btn" href="<?= BASE_URL ?>account/edit">Edit Account</a>
+        <a class="nav-btn" href="<?= BASE_URL ?>account/edit">My Account</a>
     <?php endif; ?>
 
     <a class="nav-btn nav-logout" href="<?= BASE_URL ?>auth/logout">Log Out</a>
